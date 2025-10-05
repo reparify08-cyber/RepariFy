@@ -1,0 +1,57 @@
+body {
+    padding-top: 60px; /* For fixed navbar */
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    /* কাস্টম কার্সরের জন্য: টুলকিট ইমেজ ব্যবহার করতে হবে */
+    cursor: url('images/tweezers.cur'), auto; /* ভবিষ্যতে tweezers.cur ফাইলটি images ফোল্ডারে যোগ করতে হবে */
+}
+
+/* যখন মাউস কোনো ইন্টারেক্টিভ এলিমেন্টের উপরে যাবে */
+a:hover, button:hover, .btn:hover {
+    cursor: url('images/hand_tool.cur'), pointer; /* অন্য কাস্টম কার্সর */
+}
+
+/* হিরো সেকশনের স্টাইল */
+.hero-section {
+    min-height: 85vh;
+    /* একটি সার্কিট বোর্ডের ব্যাকগ্রাউন্ড ইমেজ (ভবিষ্যতে যুক্ত করুন) */
+    background: linear-gradient(rgba(4, 55, 124, 0.75), rgba(4, 55, 124, 0.9)), url('images/circuit-bg.jpg') no-repeat center center; 
+    background-size: cover;
+    color: #fff;
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+    position: relative;
+    overflow: hidden;
+}
+
+/* টেক্সট হাইলাইট ও গ্রো ইফেক্ট (আপনার অনুরোধ অনুযায়ী) */
+.dynamic-text-grow {
+    transition: transform 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.dynamic-text-grow:hover {
+    transform: scale(1.05); /* মাউস গেলে টেক্সট সামান্য বড় হবে */
+    color: #FFC107 !important; /* হাইলাইট করার জন্য হলুদ রঙ */
+}
+
+/* ফিচার কার্ড স্টাইল */
+#features .card {
+    border: 2px solid #007bff;
+    transition: all 0.4s;
+}
+
+#features .card:hover {
+    box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+    background-color: #f8f9fa;
+    border-color: #dc3545; /* রিপেয়ারিং টুলের রঙের মতো */
+    transform: translateY(-5px);
+}
+
+/* প্রগ্রেসিভ লোডিং বার (থিম ধরে) */
+/* লোডিং ইফেক্টের জন্য একটি CSS ক্লাস */
+.repair-load-animation {
+    background-color: #dc3545; /* রিপেয়ারিং টুল/ওয়ার্নিং কালার */
+    height: 4px;
+    width: 0;
+    transition: width 2s ease-out;
+}
