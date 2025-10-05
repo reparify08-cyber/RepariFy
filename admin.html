@@ -26,8 +26,17 @@
 </head>
 <body>
 
+    <!-- Loading Overlay (Visible until auth check is done) -->
+    <div id="auth-loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 10000; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+        <div class="spinner-border text-danger" role="status" style="width: 3rem; height: 3rem;">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-3 text-muted">Checking Admin Status...</p>
+    </div>
+
+
     <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-danger fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger fixed-top" id="admin-nav" style="display:none;">
         <div class="container-fluid">
             <a class="navbar-brand dynamic-text-grow fw-bold" href="#">REPARIFY MASTER ADMIN</a>
             <button id="logout-btn" class="btn btn-warning dynamic-text-grow ms-auto">Admin Logout</button>
@@ -35,10 +44,11 @@
     </nav>
 
     <!-- Main Admin Content -->
-    <div class="container admin-container">
+    <div class="container admin-container" id="admin-content" style="display:none;">
         <h1 class="mb-4 fw-bold text-danger dynamic-text-grow">System Control & Dealer Management</h1>
         <p class="text-muted">Logged in as <span class="fw-bold" id="admin-email-display"></span></p>
-
+        
+        <!-- (Previous content from Admin Panel continues here...) -->
         <div class="row">
             <!-- 1. Pending Approvals Card -->
             <div class="col-lg-12 mb-4">
@@ -106,7 +116,7 @@
     </div>
 
     <!-- Footer -->
-    <footer class="bg-dark text-white py-3">
+    <footer class="bg-dark text-white py-3" id="admin-footer" style="display:none;">
         <div class="container text-center">
             <p class="mb-0 dynamic-text-grow">&copy; <span id="year-admin"></span> RepariFy Admin. For Internal Use Only.</p>
         </div>
@@ -133,43 +143,56 @@
         
         let currentAdminId = null; 
         
-        // --- 1. AUTHENTICATION GUARD ---
+        // --- UI ELEMENTS ---
+        const authLoading = document.getElementById('auth-loading');
+        const adminNav = document.getElementById('admin-nav');
+        const adminContent = document.getElementById('admin-content');
+        const adminFooter = document.getElementById('admin-footer');
+
+
+        // --- 1. AUTHENTICATION GUARD (ENHANCED) ---
         auth.onAuthStateChanged(user => {
             if (user) {
-                currentAdminId = user.uid;
-                
-                // IMPORTANT: Check if the logged-in user is the dedicated admin
+                // User is authenticated, now check if they are the Admin
                 if (user.email === ADMIN_EMAIL) {
+                    currentAdminId = user.uid;
                     document.getElementById('admin-email-display').textContent = user.email;
                     
-                    // Start fetching data only if admin is verified
+                    // Show Content
+                    authLoading.style.display = 'none';
+                    adminNav.style.display = 'flex'; // Use flex for navbar
+                    adminContent.style.display = 'block';
+                    adminFooter.style.display = 'block';
+
+                    // Start fetching data
                     listenForPendingShops(); 
                     listenForActiveShops();
                 } else {
-                    // Not the designated admin
-                    alert("Unauthorized Access. Redirecting.");
-                    auth.signOut();
+                    // Logged in, but NOT the Admin - Redirect immediately
+                    alert("Unauthorized Access. Redirecting to Dashboard/Login.");
+                    window.location.href = 'dashboard.html'; // Redirect to a non-admin page
                 }
 
             } else {
                 // No user logged in: Redirect to login page
+                authLoading.style.display = 'none';
                 window.location.href = 'login.html';
             }
         });
 
-        // Logout functionality
+        // Logout functionality (FIXED: Explicit redirection added)
         document.getElementById('logout-btn').addEventListener('click', () => {
             auth.signOut().then(() => {
-                console.log("Admin logged out.");
+                alert("Admin Logged out successfully.");
+                window.location.href = 'login.html'; // Explicitly redirect
             }).catch(error => {
                 alert("Logout Failed: " + error.message);
             });
         });
 
 
-        // --- 2. PENDING APPROVAL LOGIC ---
+        // --- 2. PENDING APPROVAL LOGIC (Unchanged) ---
         function listenForPendingShops() {
-            // Fetch shops where isApproved is explicitly false
             const query = db.collection('shops')
                             .where('isApproved', '==', false); 
 
@@ -201,7 +224,6 @@
                     tbody.innerHTML += row;
                 });
 
-                // Attach event listeners for Approve/Reject
                 tbody.querySelectorAll('.approve-btn').forEach(button => {
                     button.addEventListener('click', (e) => approveShop(e.target.getAttribute('data-id')));
                 });
@@ -221,14 +243,14 @@
                 approvedOn: firebase.firestore.FieldValue.serverTimestamp()
             })
             .then(() => {
-                alert(`Shop ID ${shopId.substring(0, 5)} Approved! They can now access the dashboard.`);
+                alert(`Shop ID ${shopId.substring(0, 5)} Approved!`);
             })
             .catch(error => {
                 alert("Approval Failed: " + error.message);
             });
         }
 
-        // Action: Reject Shop (Soft Reject - just update status)
+        // Action: Reject Shop 
         function rejectShop(shopId) {
             if (confirm("Are you sure you want to reject this shop? This cannot be undone.")) {
                  db.collection('shops').doc(shopId).update({
@@ -245,21 +267,20 @@
             }
         }
 
-        // --- 3. ACTIVE DEALER LISTENER (For Support/Reporting) ---
+        // --- 3. ACTIVE DEALER LISTENER (Unchanged) ---
         function listenForActiveShops() {
-            // Fetch shops where isApproved is true
             const activeQuery = db.collection('shops')
                             .where('isApproved', '==', true)
-                            .orderBy('shopName', 'asc'); // Ordering for better UX
+                            .orderBy('shopName', 'asc'); 
 
             activeQuery.onSnapshot((snapshot) => {
                 const select = document.getElementById('active-dealer-select');
-                select.innerHTML = '<option value="">-- Select an Active Shop --</option>'; // Clear options
+                select.innerHTML = '<option value="">-- Select an Active Shop --</option>'; 
 
                 snapshot.forEach(doc => {
                     const shop = doc.data();
                     const option = document.createElement('option');
-                    option.value = doc.id; // The shop's UID
+                    option.value = doc.id; 
                     option.textContent = `${shop.shopName} (${shop.email})`;
                     select.appendChild(option);
                 });
@@ -268,10 +289,11 @@
             });
         }
 
-        // --- 4. VIEW DEALER JOBS / REPORTS LOGIC ---
+        // --- 4. VIEW DEALER JOBS / REPORTS LOGIC (Unchanged) ---
         document.getElementById('view-dealer-jobs-btn').addEventListener('click', () => {
-            const selectedShopId = document.getElementById('active-dealer-select').value;
-            const selectedShopName = document.getElementById('active-dealer-select').options[document.getElementById('active-dealer-select').selectedIndex].textContent;
+            const selectElement = document.getElementById('active-dealer-select');
+            const selectedShopId = selectElement.value;
+            const selectedShopName = selectElement.options[selectElement.selectedIndex].textContent;
             
             const infoDisplay = document.getElementById('selected-dealer-info');
             const jobsTableBody = document.getElementById('dealer-jobs-table');
@@ -285,18 +307,15 @@
             infoDisplay.textContent = `Loading reports for: ${selectedShopName}`;
             jobsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-info">Fetching job data...</td></tr>`;
 
-            // Fetch all jobs belonging to the selected shop
             db.collection('jobs')
               .where('shopId', '==', selectedShopId)
-              .get() // Using get() for a one-time report fetch
+              .get()
               .then(snapshot => {
                   if (snapshot.empty) {
                       infoDisplay.textContent = `No jobs found for ${selectedShopName}.`;
                       jobsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">No job records found.</td></tr>`;
                       return;
                   }
-
-                  // Render the jobs data for the admin
                   renderAdminReport(snapshot, selectedShopName);
               })
               .catch(error => {
@@ -340,7 +359,6 @@
                 jobsTableBody.innerHTML += row;
             });
             
-            // Attach view details button listener
             jobsTableBody.querySelectorAll('.view-detail-btn').forEach(button => {
                 button.addEventListener('click', (e) => {
                     alert("Admin is now viewing the full details of Job ID: " + e.target.getAttribute('data-id') + 
@@ -352,7 +370,4 @@
     </script>
 </body>
 </html>
-
-
----
 
