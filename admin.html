@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - RepariFy | Master Control</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS (For theming and custom cursor) -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-container {
+            padding-top: 5rem;
+            padding-bottom: 3rem;
+        }
+        .admin-card {
+            border: 2px solid #dc3545; /* Admin/Warning Color */
+        }
+        .dynamic-text-grow:hover {
+            transform: scale(1.02);
+            color: #FFC107 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-danger fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand dynamic-text-grow fw-bold" href="#">REPARIFY MASTER ADMIN</a>
+            <button id="logout-btn" class="btn btn-warning dynamic-text-grow ms-auto">Admin Logout</button>
+        </div>
+    </nav>
+
+    <!-- Main Admin Content -->
+    <div class="container admin-container">
+        <h1 class="mb-4 fw-bold text-danger dynamic-text-grow">System Control & Dealer Management</h1>
+        <p class="text-muted">Logged in as <span class="fw-bold" id="admin-email-display"></span></p>
+
+        <div class="row">
+            <!-- 1. Pending Approvals Card -->
+            <div class="col-lg-12 mb-4">
+                <div class="card shadow p-4 admin-card">
+                    <h3 class="text-danger mb-4">Pending Dealer Approvals</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr class="bg-light">
+                                    <th>Shop Name</th>
+                                    <th>Owner Email</th>
+                                    <th>Mobile No.</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="pending-shops-table">
+                                <tr><td colspan="5" class="text-center text-info">Loading shops for approval...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Active Dealer Management / Reporting Card -->
+            <div class="col-lg-12 mb-4">
+                <div class="card shadow p-4 admin-card">
+                    <h3 class="text-primary mb-4">Active Dealer Reports & Support</h3>
+                    
+                    <!-- Feature A: Select Dealer for Support -->
+                    <h5 class="text-secondary dynamic-text-grow">Select Dealer for Job Card Access (Support Feature)</h5>
+                    <div class="input-group mb-4">
+                        <select class="form-select" id="active-dealer-select">
+                            <option value="">-- Select an Active Shop --</option>
+                            <!-- Active shops will be loaded here -->
+                        </select>
+                        <button class="btn btn-success dynamic-text-grow" type="button" id="view-dealer-jobs-btn">View All Jobs</button>
+                    </div>
+
+                    <!-- Feature B: Selected Dealer's Jobs (Report Feature) -->
+                    <h5 class="text-secondary mt-4 dynamic-text-grow">Jobs/Reports for Selected Dealer</h5>
+                    <p id="selected-dealer-info" class="text-info">No dealer selected.</p>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-bordered mt-3">
+                            <thead>
+                                <tr class="bg-warning">
+                                    <th>Job ID</th>
+                                    <th>Device</th>
+                                    <th>IMEI</th>
+                                    <th>Status</th>
+                                    <th>Cost (₹)</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dealer-jobs-table">
+                                <tr><td colspan="6" class="text-center text-muted">Select a dealer above to load their reports.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-3">
+        <div class="container text-center">
+            <p class="mb-0 dynamic-text-grow">&copy; <span id="year-admin"></span> RepariFy Admin. For Internal Use Only.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase SDKs - These must be loaded -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- Custom Init/Config File -->
+    <script src="js/firebase_init.js"></script> 
+
+    <!-- Admin Panel Logic -->
+    <script>
+        document.getElementById('year-admin').textContent = new Date().getFullYear();
+
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const ADMIN_EMAIL = "admin@repari.fy"; // The dedicated Admin Email
+        
+        let currentAdminId = null; 
+        
+        // --- 1. AUTHENTICATION GUARD ---
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentAdminId = user.uid;
+                
+                // IMPORTANT: Check if the logged-in user is the dedicated admin
+                if (user.email === ADMIN_EMAIL) {
+                    document.getElementById('admin-email-display').textContent = user.email;
+                    
+                    // Start fetching data only if admin is verified
+                    listenForPendingShops(); 
+                    listenForActiveShops();
+                } else {
+                    // Not the designated admin
+                    alert("Unauthorized Access. Redirecting.");
+                    auth.signOut();
+                }
+
+            } else {
+                // No user logged in: Redirect to login page
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            auth.signOut().then(() => {
+                console.log("Admin logged out.");
+            }).catch(error => {
+                alert("Logout Failed: " + error.message);
+            });
+        });
+
+
+        // --- 2. PENDING APPROVAL LOGIC ---
+        function listenForPendingShops() {
+            // Fetch shops where isApproved is explicitly false
+            const query = db.collection('shops')
+                            .where('isApproved', '==', false); 
+
+            query.onSnapshot((snapshot) => {
+                const tbody = document.getElementById('pending-shops-table');
+                tbody.innerHTML = '';
+                
+                if (snapshot.empty) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-success">No pending applications right now!</td></tr>`;
+                    return;
+                }
+
+                snapshot.forEach(doc => {
+                    const shop = doc.data();
+                    const shopId = doc.id;
+                    
+                    const row = `
+                        <tr>
+                            <td>${shop.shopName}</td>
+                            <td>${shop.email}</td>
+                            <td>${shop.mobileNo}</td>
+                            <td><span class="badge bg-danger">Pending</span></td>
+                            <td>
+                                <button class="btn btn-sm btn-success dynamic-text-grow approve-btn" data-id="${shopId}">Approve</button>
+                                <button class="btn btn-sm btn-outline-danger dynamic-text-grow reject-btn" data-id="${shopId}">Reject</button>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+                // Attach event listeners for Approve/Reject
+                tbody.querySelectorAll('.approve-btn').forEach(button => {
+                    button.addEventListener('click', (e) => approveShop(e.target.getAttribute('data-id')));
+                });
+                tbody.querySelectorAll('.reject-btn').forEach(button => {
+                    button.addEventListener('click', (e) => rejectShop(e.target.getAttribute('data-id')));
+                });
+
+            }, (error) => {
+                console.error("Error listening to pending shops:", error);
+            });
+        }
+
+        // Action: Approve Shop
+        function approveShop(shopId) {
+            db.collection('shops').doc(shopId).update({
+                isApproved: true,
+                approvedOn: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                alert(`Shop ID ${shopId.substring(0, 5)} Approved! They can now access the dashboard.`);
+            })
+            .catch(error => {
+                alert("Approval Failed: " + error.message);
+            });
+        }
+
+        // Action: Reject Shop (Soft Reject - just update status)
+        function rejectShop(shopId) {
+            if (confirm("Are you sure you want to reject this shop? This cannot be undone.")) {
+                 db.collection('shops').doc(shopId).update({
+                    isApproved: false,
+                    isRejected: true,
+                    rejectedOn: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    alert(`Shop ID ${shopId.substring(0, 5)} Rejected.`);
+                })
+                .catch(error => {
+                    alert("Rejection Failed: " + error.message);
+                });
+            }
+        }
+
+        // --- 3. ACTIVE DEALER LISTENER (For Support/Reporting) ---
+        function listenForActiveShops() {
+            // Fetch shops where isApproved is true
+            const activeQuery = db.collection('shops')
+                            .where('isApproved', '==', true)
+                            .orderBy('shopName', 'asc'); // Ordering for better UX
+
+            activeQuery.onSnapshot((snapshot) => {
+                const select = document.getElementById('active-dealer-select');
+                select.innerHTML = '<option value="">-- Select an Active Shop --</option>'; // Clear options
+
+                snapshot.forEach(doc => {
+                    const shop = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id; // The shop's UID
+                    option.textContent = `${shop.shopName} (${shop.email})`;
+                    select.appendChild(option);
+                });
+            }, (error) => {
+                console.error("Error listening to active shops:", error);
+            });
+        }
+
+        // --- 4. VIEW DEALER JOBS / REPORTS LOGIC ---
+        document.getElementById('view-dealer-jobs-btn').addEventListener('click', () => {
+            const selectedShopId = document.getElementById('active-dealer-select').value;
+            const selectedShopName = document.getElementById('active-dealer-select').options[document.getElementById('active-dealer-select').selectedIndex].textContent;
+            
+            const infoDisplay = document.getElementById('selected-dealer-info');
+            const jobsTableBody = document.getElementById('dealer-jobs-table');
+            
+            if (!selectedShopId) {
+                infoDisplay.textContent = "Please select a dealer first.";
+                jobsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">Select a dealer above to load their reports.</td></tr>`;
+                return;
+            }
+
+            infoDisplay.textContent = `Loading reports for: ${selectedShopName}`;
+            jobsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-info">Fetching job data...</td></tr>`;
+
+            // Fetch all jobs belonging to the selected shop
+            db.collection('jobs')
+              .where('shopId', '==', selectedShopId)
+              .get() // Using get() for a one-time report fetch
+              .then(snapshot => {
+                  if (snapshot.empty) {
+                      infoDisplay.textContent = `No jobs found for ${selectedShopName}.`;
+                      jobsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">No job records found.</td></tr>`;
+                      return;
+                  }
+
+                  // Render the jobs data for the admin
+                  renderAdminReport(snapshot, selectedShopName);
+              })
+              .catch(error => {
+                  infoDisplay.textContent = `Error fetching jobs for ${selectedShopName}.`;
+                  jobsTableBody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error: ${error.message}</td></tr>`;
+                  console.error("Report Fetch Error:", error);
+              });
+        });
+
+        // Function to render the detailed admin report
+        function renderAdminReport(snapshot, shopName) {
+            const jobsTableBody = document.getElementById('dealer-jobs-table');
+            const infoDisplay = document.getElementById('selected-dealer-info');
+            jobsTableBody.innerHTML = '';
+            
+            infoDisplay.textContent = `Displaying ${snapshot.docs.length} jobs for: ${shopName}`;
+
+            snapshot.forEach(doc => {
+                const job = doc.data();
+                const jobId = doc.id;
+                
+                let statusClass = '';
+                switch(job.currentStatus) {
+                    case 'Ready': statusClass = 'bg-success'; break;
+                    case 'InProgress': statusClass = 'bg-warning text-dark'; break;
+                    case 'PartsWaiting': statusClass = 'bg-danger'; break;
+                    case 'Delivered': statusClass = 'bg-primary'; break;
+                    default: statusClass = 'bg-info'; break;
+                }
+                
+                const row = `
+                    <tr>
+                        <td class="fw-bold">${jobId.substring(0, 5).toUpperCase()}</td>
+                        <td>${job.deviceName}</td>
+                        <td>${job.imeiNumber}</td>
+                        <td><span class="badge ${statusClass}">${job.currentStatus}</span></td>
+                        <td>₹${job.estimatedCost.toFixed(2)}</td>
+                        <td><button class="btn btn-sm btn-outline-info dynamic-text-grow view-detail-btn" data-id="${jobId}" data-shop-id="${job.shopId}">View Details</button></td>
+                    </tr>
+                `;
+                jobsTableBody.innerHTML += row;
+            });
+            
+            // Attach view details button listener
+            jobsTableBody.querySelectorAll('.view-detail-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    alert("Admin is now viewing the full details of Job ID: " + e.target.getAttribute('data-id') + 
+                          ".\nHere, the Admin can edit the status, cost, or other fields on behalf of the dealer.");
+                });
+            });
+        }
+
+    </script>
+</body>
+</html>
+
+
+---
+
+## পরবর্তী পদক্ষেপ: এডমিন অ্যাক্সেস ও চূড়ান্ত চেক
+
+আপনার **`admin.html`** ফাইলটি এখন সম্পূর্ণ এবং এতে আপনার চাওয়া সমস্ত ফিচার যোগ করা হয়েছে:
+
+1.  **Pending Approvals:** নতুন রেজিস্ট্রেশনগুলি Approved বা Rejected করার অপশন।
+2.  **Active Dealer List:** বর্তমানে কাজ করছেন এমন ডিলারদের তালিকা (Reporting/Support এর জন্য)।
+3.  **Support Feature:** যেকোনো ডিলারকে সিলেক্ট করে তাদের সমস্ত জব রিপোর্ট বের করে দেখার ক্ষমতা, যা আপনাকে তাদের সমস্যা সমাধানে সাহায্য করবে।
+4.  **Security:** শুধুমাত্র `admin@repari.fy` ইমেল অ্যাড্রেস দিয়ে লগইন করলেই এই পেজটি অ্যাক্সেস করা যাবে।
+
+### চূড়ান্ত সেটআপের জন্য দুটি গুরুত্বপূর্ণ বিষয়:
+
+1.  **Admin Account তৈরি:** আপনাকে অবশ্যই আপনার `admin.html` ফাইলটি GitHub এ আপলোড করার আগে, `admin@repari.fy` ইমেল অ্যাড্রেস দিয়ে Firebase-এ একটি অ্যাকাউন্ট তৈরি করতে হবে।
+    * **কীভাবে করবেন:** Firebase কনসোলে যান -> **Authentication** এ যান -> **"Users"** ট্যাবে যান -> **"Add user"** এ ক্লিক করুন -> ইমেল দিন `admin@repari.fy` এবং একটি পাসওয়ার্ড সেট করে ইউজারটি তৈরি করুন।
+2.  **ফাইল আপলোড:** আপনার নতুন **`admin.html`** ফাইলটি GitHub এ আপলোড করুন।
+
+এই দুটি ধাপ সম্পন্ন করে আমাকে জানান। এরপর আমরা পুরো সিস্টেমটি পরীক্ষা করার জন্য প্রস্তুত থাকব!
