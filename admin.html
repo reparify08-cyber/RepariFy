@@ -37,7 +37,7 @@
         <option value="trial">Trial Plan</option>
         <option value="subscription">Subscribed</option>
       </select>
-      <button id="clearFilterBtn" class="btn btn-secondary btn-sm">Clear</button>
+      <button id="clearFilterBtn" class="btn btn-secondary btn-sm">Clear Search & Filter</button>
     </div>
 
     <div class="col-md-6 export-group d-flex justify-content-end gap-2">
@@ -91,13 +91,11 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script>
-  const { jsPDF } = window.jspdf;
-</script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.25/dist/jspdf.plugin.autotable.min.js"></script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+  import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
   import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
   const firebaseConfig = {
@@ -118,68 +116,68 @@
   const shopsTable = document.getElementById('shopsTable');
   let shopsData = [];
 
-  // Authentication check and redirect if not admin
+  // Logout Button fix
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    signOut(auth).then(() => window.location.href = 'login.html');
+  });
+
+  // Auth check
   onAuthStateChanged(auth, (user) => {
     if (!user || user.email !== 'admin@repari.fy') {
       window.location.href = 'login.html';
     }
   });
 
-  // Load shops real-time
+  // Load shops realtime
   onSnapshot(collection(db, 'shops'), (snapshot) => {
-    shopsData = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
+    shopsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     renderTable(shopsData);
+  }, (err) => {
+    shopListBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Failed to load shop data</td></tr>`;
   });
 
-  // Render table rows
   function renderTable(data) {
     if (data.length === 0) {
-      shopListBody.innerHTML = `<tr><td colspan="9" class="text-center">No matching records found</td></tr>`;
+      shopListBody.innerHTML = `<tr><td colspan="9" class="text-center">No matching records</td></tr>`;
       return;
     }
     shopListBody.innerHTML = '';
     data.forEach(shop => {
-      const planPriceMap = {
+      const planPrices = {
         trial: 'Free',
-        6months: document.getElementById('plan6m').value || 'N/A',
-        1year: document.getElementById('plan1y').value || 'N/A',
-        2years: document.getElementById('plan2y').value || 'N/A'
+        '6months': document.getElementById('plan6m').value || 'N/A',
+        '1year': document.getElementById('plan1y').value || 'N/A',
+        '2years': document.getElementById('plan2y').value || 'N/A'
       };
-      const planPrice = planPriceMap[shop.subscriptionStatus?.toLowerCase()] || 'N/A';
-      const subscriptionEnds = shop.subscriptionEnds?.toDate ? shop.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
+      const price = planPrices[shop.subscriptionStatus?.toLowerCase()] || 'N/A';
+      const subEnds = shop.subscriptionEnds?.toDate ? shop.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
       const approvedBadge = shop.isApproved ? `<span class="badge bg-success">Approved</span>` : `<span class="badge bg-warning">Pending</span>`;
 
-      const row = document.createElement('tr');
-      row.innerHTML = `
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
         <td>${shop.id}</td>
         <td>${shop.shopName || '-'}</td>
         <td>${shop.email || '-'}</td>
         <td>${shop.mobileNo || '-'}</td>
-        <td>
-          <select class="form-select form-select-sm" data-id="${shop.id}">
-            <option value="trial" ${shop.subscriptionStatus === 'trial' ? 'selected' : ''}>Trial</option>
-            <option value="6months" ${shop.subscriptionStatus === '6months' ? 'selected' : ''}>6 Months</option>
-            <option value="1year" ${shop.subscriptionStatus === '1year' ? 'selected' : ''}>1 Year</option>
-            <option value="2years" ${shop.subscriptionStatus === '2years' ? 'selected' : ''}>2 Years</option>
-          </select>
-        </td>
-        <td>₹${planPrice}</td>
-        <td>${subscriptionEnds}</td>
+        <td><select class="form-select form-select-sm" data-id="${shop.id}">
+          <option value="trial" ${shop.subscriptionStatus === 'trial' ? 'selected' : ''}>Trial</option>
+          <option value="6months" ${shop.subscriptionStatus === '6months' ? 'selected' : ''}>6 Months</option>
+          <option value="1year" ${shop.subscriptionStatus === '1year' ? 'selected' : ''}>1 Year</option>
+          <option value="2years" ${shop.subscriptionStatus === '2years' ? 'selected' : ''}>2 Years</option>
+        </select></td>
+        <td>₹${price}</td>
+        <td>${subEnds}</td>
         <td>${approvedBadge}</td>
         <td>
           <button class="btn btn-success btn-sm approve-btn" data-id="${shop.id}">Approve</button>
           <button class="btn btn-danger btn-sm revoke-btn" data-id="${shop.id}">Revoke</button>
         </td>
       `;
-      shopListBody.appendChild(row);
+      shopListBody.appendChild(tr);
     });
     attachEvents();
   }
 
-  // Attach event listeners to buttons and selects
   function attachEvents() {
     document.querySelectorAll('.approve-btn').forEach(btn => {
       btn.onclick = () => handleApproval(btn.dataset.id, true);
@@ -192,61 +190,45 @@
     });
   }
 
-  // Handle approval toggle
   async function handleApproval(id, approve) {
-    if (!confirm(`${approve ? 'Approve' : 'Revoke'} this shop?`)) return;
+    if (!confirm(`Are you sure to ${approve ? 'approve' : 'revoke'} this shop?`)) return;
     const now = new Date();
     let subscriptionEnds = null;
     if (approve) {
       const plan = document.querySelector(`select[data-id="${id}"]`).value;
       switch (plan) {
-        case '6months':
-          subscriptionEnds = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
-          break;
-        case '1year':
-          subscriptionEnds = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-          break;
-        case '2years':
-          subscriptionEnds = new Date(now.getTime() + 2 * 365 * 24 * 60 * 60 * 1000);
-          break;
-        default:
-          subscriptionEnds = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        case '6months': subscriptionEnds = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000); break;
+        case '1year': subscriptionEnds = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); break;
+        case '2years': subscriptionEnds = new Date(now.getTime() + 2 * 365 * 24 * 60 * 60 * 1000); break;
+        default: subscriptionEnds = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       }
     }
     try {
       await updateDoc(doc(db, 'shops', id), {
         isApproved: approve,
         subscriptionStatus: approve ? document.querySelector(`select[data-id="${id}"]`).value : 'revoked',
-        subscriptionEnds: subscriptionEnds,
+        subscriptionEnds,
         updatedAt: serverTimestamp()
       });
-      alert(`Shop ${approve ? 'approved' : 'revoked'}.`);
+      alert(`Shop ${approve ? 'approved' : 'revoked'} successfully.`);
     } catch (error) {
-      alert('Error updating shop: ' + error.message);
+      alert('Error updating shop status: ' + error.message);
     }
   }
 
-  // Handle plan change
   async function handlePlanChange(id, plan) {
     const now = new Date();
     let subscriptionEnds;
     switch (plan) {
-      case '6months':
-        subscriptionEnds = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
-        break;
-      case '1year':
-        subscriptionEnds = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-        break;
-      case '2years':
-        subscriptionEnds = new Date(now.getTime() + 2 * 365 * 24 * 60 * 60 * 1000);
-        break;
-      default:
-        subscriptionEnds = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      case '6months': subscriptionEnds = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000); break;
+      case '1year': subscriptionEnds = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); break;
+      case '2years': subscriptionEnds = new Date(now.getTime() + 2 * 365 * 24 * 60 * 60 * 1000); break;
+      default: subscriptionEnds = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
     }
     try {
       await updateDoc(doc(db, 'shops', id), {
         subscriptionStatus: plan,
-        subscriptionEnds: subscriptionEnds,
+        subscriptionEnds,
         updatedAt: serverTimestamp()
       });
       alert('Plan updated successfully.');
@@ -255,7 +237,7 @@
     }
   }
 
-  // FILTERING & SEARCH
+  // Search and Filter
   const searchInput = document.getElementById('searchInput');
   const filterSelect = document.getElementById('filterSelect');
   const clearFilterBtn = document.getElementById('clearFilterBtn');
@@ -271,154 +253,25 @@
   function applyFilters() {
     const searchTerm = searchInput.value.toLowerCase().trim();
     const filter = filterSelect.value;
-
     let filtered = shopsData;
 
-    if (filter === 'approved') {
-      filtered = filtered.filter(x => x.isApproved);
-    } else if (filter === 'notapproved') {
-      filtered = filtered.filter(x => !x.isApproved);
-    } else if (filter === 'trial') {
-      filtered = filtered.filter(x => x.subscriptionStatus === 'trial');
-    } else if (filter === 'subscription') {
-      filtered = filtered.filter(x => x.subscriptionStatus !== 'trial' && x.isApproved);
-    }
+    if (filter === 'approved') filtered = filtered.filter(s => s.isApproved);
+    else if (filter === 'notapproved') filtered = filtered.filter(s => !s.isApproved);
+    else if (filter === 'trial') filtered = filtered.filter(s => s.subscriptionStatus === 'trial');
+    else if (filter === 'subscription') filtered = filtered.filter(s => s.subscriptionStatus !== 'trial' && s.isApproved);
+
     if (searchTerm) {
-      filtered = filtered.filter(x => 
-        (x.mobileNo && x.mobileNo.toLowerCase().includes(searchTerm)) ||
-        (x.shopName && x.shopName.toLowerCase().includes(searchTerm))
+      filtered = filtered.filter(s =>
+        (s.mobileNo && s.mobileNo.toLowerCase().includes(searchTerm)) ||
+        (s.shopName && s.shopName.toLowerCase().includes(searchTerm))
       );
     }
     renderTable(filtered);
   }
 
-  // EXPORT CSV & PDF
-  document.getElementById('exportCsvBtn').addEventListener('click', () => exportCSV(shopsData));
-  document.getElementById('exportPdfBtn').addEventListener('click', () => exportPDF(shopsData));
+  window.onload = () => {};
 
-  function exportCSV(data) {
-    if (!data.length) {
-      alert('No data to export!');
-      return;
-    }
-    const headers = ['Shop ID', 'Shop Name', 'Email', 'Mobile', 'Plan', 'Price', 'Subscription Ends', 'Approval Status'];
-    const csvRows = [headers.join(',')];
-
-    data.forEach(shop => {
-      const approval = shop.isApproved ? 'Approved' : 'Pending';
-      const planPriceMap = {
-        trial: 'Free',
-        6months: document.getElementById('plan6m').value || 'N/A',
-        1year: document.getElementById('plan1y').value || 'N/A',
-        2years: document.getElementById('plan2y').value || 'N/A'
-      };
-      let price = planPriceMap[shop.subscriptionStatus?.toLowerCase()] || 'N/A';
-      let ends = shop.subscriptionEnds?.toDate ? shop.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
-      csvRows.push([
-        `"${shop.id}"`,
-        `"${shop.shopName}"`,
-        `"${shop.email}"`,
-        `"${shop.mobileNo}"`,
-        `"${shop.subscriptionStatus}"`,
-        `"₹${price}"`,
-        `"${ends}"`,
-        `"${approval}"`
-      ].join(','));
-    });
-
-    const csvContent = csvRows.join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.setAttribute('href', URL.createObjectURL(blob));
-    link.setAttribute('download', 'RepariFy_shops_export.csv');
-    link.click();
-  }
-
-  function exportPDF(data) {
-    if (!data.length) {
-      alert('No data to export!');
-      return;
-    }
-    const doc = new jsPDF();
-    doc.setFontSize(14);
-    doc.text('RepariFy Shops Export', 14, 22);
-    const tableColumn = ['Shop ID', 'Shop Name', 'Email', 'Mobile', 'Plan', 'Price', 'Subscription Ends', 'Approval'];
-    const tableRows = [];
-
-    data.forEach(shop => {
-      const approval = shop.isApproved ? 'Approved' : 'Pending';
-      const planPriceMap = {
-        trial: 'Free',
-        6months: document.getElementById('plan6m').value || 'N/A',
-        1year: document.getElementById('plan1y').value || 'N/A',
-        2years: document.getElementById('plan2y').value || 'N/A'
-      };
-      let price = planPriceMap[shop.subscriptionStatus?.toLowerCase()] || 'N/A';
-      let ends = shop.subscriptionEnds?.toDate ? shop.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
-      const row = [
-        shop.id,
-        shop.shopName || '',
-        shop.email || '',
-        shop.mobileNo || '',
-        shop.subscriptionStatus || '',
-        `₹${price}`,
-        ends,
-        approval
-      ];
-      tableRows.push(row);
-    });
-
-    // AutoTable plugin can be used but here manual simple print for brevity
-    let y = 30;
-    doc.setFontSize(10);
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: y,
-      margin: {top: 10},
-      theme: 'grid',
-    });
-
-    doc.save('RepariFy_shops_export.pdf');
-  }
-
-  // Load current prices
-  async function loadPlanPrices() {
-    const docSnap = await getDoc(doc(db, 'settings', 'planPrices'));
-    if (docSnap.exists()) {
-      const data = docSnap.data();
-      document.getElementById('plan6m').value = data['6months'] || 5999;
-      document.getElementById('plan1y').value = data['1year'] || 10999;
-      document.getElementById('plan2y').value = data['2years'] || 19999;
-    }
-  }
-
-  // Save prices handler
-  document.getElementById('savePlanPricesBtn').addEventListener('click', async () => {
-    const p6 = parseInt(document.getElementById('plan6m').value) || 0;
-    const p1 = parseInt(document.getElementById('plan1y').value) || 0;
-    const p2 = parseInt(document.getElementById('plan2y').value) || 0;
-    try {
-      await updateDoc(doc(db, 'settings', 'planPrices'), {
-        '6months': p6,
-        '1year': p1,
-        '2years': p2,
-        updatedAt: serverTimestamp()
-      }, {merge:true});
-      document.getElementById('planStatusMsg').textContent = 'Plan prices updated successfully.';
-      setTimeout(() => {
-        document.getElementById('planStatusMsg').textContent = '';
-      }, 2500);
-    } catch (err) {
-      alert('Failed to update plan prices: ' + err.message);
-    }
-  });
-
-  loadPlanPrices();
 </script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 </body>
 </html>
