@@ -1,0 +1,19 @@
+# Ignore Firebase Config file
+js/firebase_init.js
+
+# Standard Node.js Folder (যদি Node ব্যবহার হয়)
+node_modules/
+
+# OS/Editor specific files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs, temp files
+*.log
+temp/
+
+# Build/dist folders (optional)
+dist/
+build/
