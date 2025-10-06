@@ -1,134 +1,80 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RepariFy | The Smart ERP for Mobile Repair Shops - Made in India</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RepariFy - স্মার্ট মোবাইল রেপেয়ার ম্যানেজমেন্ট</title>
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+<style>
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+    min-height: 100vh;
+    margin: 0;
+  }
+  .navbar {
+    box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
+  }
+  .hero {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    color: #fff;
+    text-align: center;
+  }
+  .hero h1 {
+    font-weight: 700;
+    font-size: 2.8rem;
+    margin-bottom: 30px;
+  }
+  .btn-group a {
+    margin: 10px;
+    padding: 1rem 2rem;
+    font-size: 1.25rem;
+  }
+</style>
 </head>
 <body>
 
-    <div id="loading-bar" class="repair-load-animation fixed-top"></div>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+  <div class="container">
+    <a class="navbar-brand" href="#">RepariFy <small class="text-warning">Made in India</small></a>
+  </div>
+</nav>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="index.html" style="font-family: 'Poppins', sans-serif; font-size: 1.8rem; font-weight: 700;">
-                <span class="text-info dynamic-text-grow">RepariFy</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link active dynamic-text-grow" href="#">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link dynamic-text-grow" href="#features">Features</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link dynamic-text-grow" href="#pricing">Pricing</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-success text-white mx-lg-2 dynamic-text-grow" href="register.html">**Register Your Shop**</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link btn btn-warning text-dark dynamic-text-grow" href="login.html">Login</a>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<section class="hero">
+  <h1>মোবাইল রেপেয়ার দোকানের জন্য স্মার্ট ম্যানেজমেন্ট সফটওয়্যার</h1>
+  <div class="btn-group">
+    <a href="register.html" class="btn btn-primary btn-lg">নতুন শপ রেজিস্টার করুন</a>
+    <a href="login.html" class="btn btn-outline-light btn-lg">লগইন করুন</a>
+  </div>
+  <p class="mt-5">কোন সমস্যা? যোগাযোগ করুন: <br/> ফোন: 9046356631 | ইমেইল: <a href="mailto:reparify08@gmail.com" class="text-white text-decoration-underline">reparify08@gmail.com</a></p>
+</section>
 
-    <header class="hero-section text-center text-white d-flex align-items-center">
-        <div class="container">
-            <h1 class="display-3 fw-bold mb-4 dynamic-text-grow">Step into the Future of Repair Management.</h1>
-            <h2 class="lead mb-5 dynamic-text-grow">Get **7-Days Free Trial** of India's Smartest Mobile Repair ERP! Zero Paperwork. Full Control.</h2>
-            <a href="register.html" class="btn btn-lg btn-danger shadow-lg me-3 dynamic-text-grow">**START YOUR FREE TRIAL NOW!**</a>
-            <a href="#features" class="btn btn-lg btn-outline-light dynamic-text-grow">Explore Tools & Features</a>
-        </div>
-    </header>
+<!-- Firebase SDKs (modular v9 style) -->
+<script type="module">
+  // Import the functions
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
 
-    <section id="features" class="container py-5 text-center">
-        <h2 class="mb-5 display-5 fw-bold text-primary dynamic-text-grow">The Digital Toolkit for Your Repair Hub</h2>
-        
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm p-4">
-                    <h5 class="card-title fw-bold text-success dynamic-text-grow">Instant Professional Billing</h5>
-                    <p class="card-text">Generate GST-compliant Invoices, Job Cards, and legal Unlocking Declarations in a single click. Print with ease!</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm p-4">
-                    <h5 class="card-title fw-bold text-success dynamic-text-grow">IMEI-Powered Search Engine</h5>
-                    <p class="card-text">All your customer data, repair history, and invoices are securely stored on the cloud. Find any record using **IMEI** in seconds.</p>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card h-100 shadow-sm p-4">
-                    <h5 class="card-title fw-bold text-success dynamic-text-grow">SaaS Subscription Control</h5>
-                    <p class="card-text">Manage renewals, pricing, and access for your dealers effortlessly from a powerful, centralized Admin Panel.</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="alert alert-warning mt-5 dynamic-text-grow" role="alert">
-            <i class="bi bi-info-circle-fill"></i> **Trial Alert!** Your 7-day free access starts immediately after admin approval. Upgrade anytime!
-        </div>
-    </section>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDBCalxCVKnVERmpLnnCjT0X9Basy3uw7o",
+    authDomain: "reparify-4db99.firebaseapp.com",
+    projectId: "reparify-4db99",
+    storageBucket: "reparify-4db99.appspot.com",
+    messagingSenderId: "1039139563247",
+    appId: "1:1039139563247:web:b93c63206f03433de11d1a",
+    measurementId: "G-QP5QS2WJJX"
+  };
 
-    <section id="pricing" class="container py-5 text-center bg-light">
-        <h2 class="mb-5 display-5 fw-bold text-secondary dynamic-text-grow">Simple and Transparent Pricing</h2>
-        <div class="row justify-content-center">
-            <div class="col-md-4">
-                <div class="card h-100 shadow p-4 border-success">
-                    <h4 class="fw-bold dynamic-text-grow">Annual Plan</h4>
-                    <h1 class="display-4 fw-bold">₹XXXX</h1>
-                    <p class="text-muted">Per Year (Billed Annually)</p>
-                    <ul class="list-unstyled text-start mx-auto" style="max-width: 200px;">
-                        <li>✓ Unlimited Invoices</li>
-                        <li>✓ Cloud Backup</li>
-                        <li>✓ 24/7 Support</li>
-                    </ul>
-                    <a href="register.html" class="btn btn-success btn-lg mt-3 dynamic-text-grow">Get Started</a>
-                </div>
-            </div>
-        </div>
-    </section>
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
 
-
-    <footer class="bg-dark text-white py-4">
-        <div class="container text-center">
-            <p class="mb-0 dynamic-text-grow">&copy; <span id="year"></span> RepariFy. All Rights Reserved. **Proudly Made in India.**</p>
-        </div>
-    </footer>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Loading Bar Simulation
-        document.addEventListener("DOMContentLoaded", function() {
-            const loadingBar = document.getElementById('loading-bar');
-            loadingBar.style.width = '100%'; // Full width on page load
-            
-            // Text Highlight Pop-up (Trial Reminder)
-            setTimeout(() => {
-                const trialReminder = document.createElement('div');
-                trialReminder.innerHTML = `
-                    <div class="alert alert-danger alert-dismissible fade show fixed-bottom mx-auto mb-3" role="alert" style="max-width: 400px; z-index: 1050;">
-                        <h4 class="alert-heading">Your Trial is Running!</h4>
-                        <p class="mb-0">Please contact us to secure your subscription and unlock all features.</p>
-                        <a href="#pricing" class="btn btn-sm btn-primary mt-2">Check Plans</a>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                `;
-                document.body.appendChild(trialReminder);
-            }, 5000); // 5 seconds after load
-        });
-        
-        document.getElementById('year').textContent = new Date().getFullYear();
-    </script>
 </body>
 </html>
