@@ -1,97 +1,259 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>RepariFy - Smart Mobile Repair Management</title>
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-<style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
-    min-height: 100vh;
-    margin: 0;
-  }
-  .navbar {
-    box-shadow: 0 4px 6px rgb(0 0 0 / 0.1);
-  }
-  .hero {
-    min-height: 70vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    color: #fff;
-    text-align: center;
-    padding: 80px 20px 40px;
-  }
-  .hero h1 {
-    font-weight: 700;
-    font-size: 2.8rem;
-    margin-bottom: 20px;
-  }
-  .btn-group a {
-    margin: 10px;
-    padding: 1rem 2rem;
-    font-size: 1.25rem;
-  }
-  #pricing {
-    background-color: white;
-    padding: 40px 20px;
-    color: #333;
-  }
-  #pricing h2 {
-    margin-bottom: 30px;
-    font-weight: 700;
-    color: #28a745;
-  }
-  .pricing-card {
-    border-radius: 10px;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.2);
-    padding: 30px;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RepariFy - Smart Mobile Repair & Unlock Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      margin: 0;
+      padding-top: 80px;
+      color: #333;
+    }
+    .navbar {
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .hero {
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0 1rem;
+      text-align: center;
+      color: #fff;
+    }
+    .hero h1 {
+      font-weight: 700;
+      font-size: 3rem;
+      margin-bottom: 20px;
+      max-width: 600px;
+    }
+    .hero p.lead {
+      font-size: 1.3rem;
+      margin-bottom: 30px;
+      max-width: 700px;
+    }
+    .hero .btn-group .btn {
+      padding: 1rem 2.5rem;
+      font-size: 1.3rem;
+      margin: 0 10px;
+    }
+    #features {
+      background: #fff;
+      padding: 60px 20px;
+      text-align: center;
+    }
+    #features h2 {
+      font-size: 2.5rem;
+      color: #28a745;
+      margin-bottom: 50px;
+      font-weight: 700;
+    }
+    .feature-card {
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 25px rgba(0,0,0,0.1);
+      background: #f9fafb;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      height: 100%;
+    }
+    .feature-card:hover {
+      transform: translateY(-10px);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    }
+    .feature-card img {
+      width: 80px;
+      margin-bottom: 20px;
+    }
+    .feature-card h5 {
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #155724;
+    }
+    .feature-card p {
+      font-size: 1rem;
+      color: #444;
+    }
+    #pricing {
+      background: #f4f6f7;
+      padding: 60px 20px;
+      text-align: center;
+    }
+    #pricing h2 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #17a2b8;
+      margin-bottom: 40px;
+    }
+    .pricing-card {
+      background: #fff;
+      border-radius: 15px;
+      padding: 30px 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      transition: box-shadow 0.3s ease;
+      height: 100%;
+    }
+    .pricing-card:hover {
+      box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    }
+    .pricing-card h3 {
+      margin-bottom: 10px;
+      font-weight: 700;
+      color: #117a8b;
+    }
+    .pricing-card h1 {
+      font-size: 3.2rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+    }
+    .pricing-card ul {
+      list-style: none;
+      padding: 0;
+      margin-bottom: 30px;
+      color: #444;
+      text-align: left;
+    }
+    .pricing-card ul li {
+      padding-left: 25px;
+      position: relative;
+      margin-bottom: 15px;
+    }
+    .pricing-card ul li:before {
+      content: '✔';
+      color: #28a745;
+      position: absolute;
+      left: 0;
+      top: 0;
+      font-size: 1.2rem;
+    }
+    .pricing-card .btn {
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+    footer {
+      background: #343a40;
+      color: #ccc;
+      padding: 20px 0;
+      text-align: center;
+    }
+    footer a {
+      color: #fff;
+      text-decoration: underline;
+    }
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+      .btn-group .btn {
+        margin: 10px 0;
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container">
-    <a class="navbar-brand" href="#">RepariFy <small class="text-warning">Made in India</small></a>    
+    <a class="navbar-brand" href="#">RepariFy <small class="text-warning">Made in India</small></a>
   </div>
 </nav>
 
 <section class="hero">
-  <h1>Smart Mobile Repair Shop Management</h1>
+  <h1>The Smart Mobile Repair & Unlock Management</h1>
+  <p class="lead">Solve legal issues related to stolen phones. Our cloud storage secures your billing & unlock data, accessible anytime.</p>
   <div class="btn-group">
     <a href="register.html" class="btn btn-primary btn-lg">Register Your Shop</a>
     <a href="login.html" class="btn btn-outline-light btn-lg">Login</a>
   </div>
-  <p class="mt-4">Need help? Contact us: <br/> Phone: 9046356631 | Email: <a href="mailto:reparify08@gmail.com" class="text-white text-decoration-underline">reparify08@gmail.com</a></p>
 </section>
 
-<section id="pricing" class="container text-center">
-  <h2>Simple & Transparent Pricing</h2>
-  <div class="row justify-content-center">
+<section id="features" class="container">
+  <h2>RepariFy Features</h2>
+  <div class="row g-4">
     <div class="col-md-4">
-      <div class="pricing-card shadow-sm border-success">
-        <h3 class="fw-bold">Basic Plan</h3>
-        <h1 class="display-4 fw-bold">₹XXXX</h1>
-        <p>Per Year (Billed Annually)</p>
-        <ul class="list-unstyled text-start mx-auto" style="max-width: 250px;">
-          <li>✓ Unlimited Invoices & Job Cards</li>
-          <li>✓ Cloud Backup & Safe Data</li>
-          <li>✓ 24/7 Support</li>
-          <li>✓ Admin Control Panel</li>
-        </ul>
-        <a href="register.html" class="btn btn-success btn-lg mt-3">Get Started</a>
+      <div class="feature-card">
+        <img src="https://cdn-icons-png.flaticon.com/512/2917/2917242.png" alt="Instant Billing" />
+        <h5>Instant Professional Billing</h5>
+        <p>Generate GST compliant invoices & job cards in a click with print & save options.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feature-card">
+        <img src="https://cdn-icons-png.flaticon.com/512/2921/2921822.png" alt="IMEI Search" />
+        <h5>IMEI-Based Search Engine</h5>
+        <p>Find customer & repair history quickly using IMEI to ensure secure phone unlocking.</p>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="feature-card">
+        <img src="https://cdn-icons-png.flaticon.com/512/1247/1247134.png" alt="Subscription Control" />
+        <h5>Subscription & Admin Control</h5>
+        <p>Manage renewals, user access and pricing from a powerful admin panel.</p>
       </div>
     </div>
   </div>
-  <p class="mt-5 text-muted">Your 7-day free trial starts immediately after admin approval. Upgrade any time!</p>
 </section>
 
-<!-- Firebase SDKs (modular v9 recommended) -->
+<section id="pricing" class="container">
+  <h2>Simple and Transparent Plans</h2>
+  <div class="row justify-content-center g-4">
+    <div class="col-md-4">
+      <div class="pricing-card shadow-sm border-info">
+        <h3>6 Months Plan</h3>
+        <h1>₹5,999</h1>
+        <p>Billed Semi-Annually</p>
+        <ul>
+          <li>Unlimited Billings</li>
+          <li>Secure Cloud Data</li>
+          <li>24/7 Support</li>
+          <li>Full Admin Dashboard</li>
+        </ul>
+        <a href="register.html" class="btn btn-info">Get Started</a>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="pricing-card shadow-sm border-success">
+        <h3>1 Year Plan</h3>
+        <h1>₹10,999</h1>
+        <p>Billed Annually</p>
+        <ul>
+          <li>Unlimited Billings</li>
+          <li>Secure Cloud Data</li>
+          <li>Priority Support</li>
+          <li>Full Admin Dashboard</li>
+        </ul>
+        <a href="register.html" class="btn btn-success">Get Started</a>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="pricing-card shadow-sm border-warning">
+        <h3>2 Years Plan</h3>
+        <h1>₹19,999</h1>
+        <p>Billed Biannually</p>
+        <ul>
+          <li>Unlimited Billings</li>
+          <li>Secure Cloud Data</li>
+          <li>Priority Support</li>
+          <li>Full Admin Dashboard</li>
+        </ul>
+        <a href="register.html" class="btn btn-warning">Get Started</a>
+      </div>
+    </div>
+  </div>
+  <p class="mt-5 text-muted text-center">7-Day Free Trial starts after admin approval. Upgrade anytime!</p>
+</section>
+
+<footer>
+  <p>&copy; 2025 RepariFy. Proudly Made in India.</p>
+</footer>
+
+<!-- Firebase SDKs (modular) -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics.js";
