@@ -38,20 +38,19 @@
   <h2 class="text-center">Dealer Login</h2>
   <form id="loginForm">
     <div class="mb-3">
-      <label for="email" class="form-label">Email / User ID <span class="text-danger">*</span></label>
-      <input type="email" class="form-control" id="email" name="email" placeholder="Enter your registered email" required />
+      <label for="email" class="form-label">Email or User ID <span class="text-danger">*</span></label>
+      <input type="email" class="form-control" id="email" name="email" placeholder="Your registered email" required />
     </div>
     <div class="mb-3">
       <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
       <input type="password" class="form-control" id="password" name="password" required />
     </div>
 
-    <button type="submit" class="btn btn-primary w-100 btn-lg mb-3">Login to Dashboard</button>
+    <button type="submit" class="btn btn-primary w-100 btn-lg">Login</button>
   </form>
 
-  <div class="text-center">
-    <p class="mb-1">New to RepariFy? <a href="register.html" class="text-success fw-bold">Start Your Free Trial Here</a></p>
-    <p class="mb-0 text-muted" style="font-size: 0.8rem;">Are you the System Admin? <a href="#" onclick="alert('Use your admin email (admin@repari.fy) and password to log in. You will be redirected to the Admin Panel if successful.');" class="text-danger fw-bold text-decoration-none">Admin Login</a></p>
+  <div class="text-center mt-3">
+    <p>New to RepariFy? <a href="register.html" class="text-success fw-bold">Register for Free Trial</a></p>
   </div>
 </div>
 
@@ -75,7 +74,6 @@
   const db = getFirestore();
 
   const loginForm = document.getElementById('loginForm');
-
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -83,38 +81,26 @@
     const password = loginForm.password.value;
 
     try {
-      // Admin login check
-      if(email.toLowerCase() === 'admin@repari.fy'){
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        // Redirect to admin panel
-        window.location.href = 'admin.html';
-        return;
-      }
-
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const userId = userCredential.user.uid;
 
-      // Check user approval from Firestore (shops collection)
+      // Check user approval
       const userDoc = await getDoc(doc(db, 'shops', userId));
-
       if(userDoc.exists()){
         const userData = userDoc.data();
         if(userData.isApproved){
-          // Approved user - redirect to dashboard
           window.location.href = 'dashboard.html';
         } else {
           await signOut(auth);
-          alert("Access Denied: Your shop registration is pending admin approval.");
+          alert("Access Denied: Your registration is pending admin approval.");
         }
       } else {
         await signOut(auth);
-        alert("Login Failed: Shop data not found. Please register first.");
+        alert("No shop data found. Please register first.");
       }
     } catch (error) {
-      let msg = "Login failed. Please check your credentials.";
-      if (error.code === 'auth/user-not-found') msg = "No account found with this email. Please register.";
-      alert(msg);
-      console.error("Login Error:", error);
+      alert("Login failed! Please check your credentials and try again.");
+      console.error(error);
     }
   });
 </script>
