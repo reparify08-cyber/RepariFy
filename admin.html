@@ -12,7 +12,7 @@
     background-color: #f8f9fa;
   }
   .container {
-    max-width: 1100px;
+    max-width: 1150px;
   }
   h2 {
     font-weight: 700;
@@ -24,22 +24,23 @@
     overflow-y: auto;
   }
   .btn-primary, .btn-success, .btn-danger {
-    min-width: 110px;
+    min-width: 100px;
   }
 </style>
 </head>
 <body>
 
 <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark">
-  <div class="container">
+  <div class="container d-flex justify-content-between align-items-center">
     <a class="navbar-brand" href="#">RepariFy Admin Panel</a>
+    <button id="logoutBtn" class="btn btn-outline-light btn-sm">Logout</button>
   </div>
 </nav>
 
 <div class="container">
-  <h2>Manage Shop Registrations & Plans</h2>
+  <h2>Manage Shops and Plans</h2>
   <div class="table-responsive">
-    <table class="table table-striped table-bordered align-middle">
+    <table class="table table-striped table-bordered align-middle text-center">
       <thead class="table-dark">
         <tr>
           <th>Shop ID</th>
@@ -47,13 +48,14 @@
           <th>Email</th>
           <th>Mobile</th>
           <th>Plan</th>
+          <th>Price (₹)</th>
           <th>Subscription Ends</th>
-          <th>Approval Status</th>
+          <th>Approved</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody id="shopListBody">
-        <tr><td colspan="8" class="text-center text-muted">Loading shops...</td></tr>
+        <tr><td colspan="9" class="text-center text-muted">Loading shops...</td></tr>
       </tbody>
     </table>
   </div>
@@ -62,6 +64,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
   import { getFirestore, collection, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+  import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDBCalxCVKnVERmpLnnCjT0X9Basy3uw7o",
@@ -75,115 +78,166 @@
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore();
+  const auth = getAuth();
+
+  // Logout Button
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    signOut(auth).then(() => {
+      window.location.href = 'login.html';
+    });
+  });
+
+  // Redirect non-admin users off this page
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      window.location.href = 'login.html';
+      return;
+    }
+    if (user.email !== 'admin@repari.fy') {
+      alert("Access Denied: You are not authorized.");
+      auth.signOut();
+      window.location.href = 'login.html';
+    }
+  });
 
   const shopListBody = document.getElementById('shopListBody');
 
   async function loadShopList() {
     const shopsSnap = await getDocs(collection(db, 'shops'));
-    if(shopsSnap.empty){
-      shopListBody.innerHTML = `<tr><td colspan="8" class="text-center">No shops found.</td></tr>`;
-    } else {
-      shopListBody.innerHTML = '';
-      shopsSnap.forEach(docSnap => {
-        const data = docSnap.data();
-        const shopId = docSnap.id;
-        const planEndsDate = data.subscriptionEnds ? data.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
-        const approvedText = data.isApproved ? `<span class='badge bg-success'>Approved</span>` : `<span class='badge bg-warning'>Pending</span>`;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${shopId}</td>
-          <td>${data.shopName}</td>
-          <td>${data.email}</td>
-          <td>${data.mobileNo}</td>
-          <td>
-            <select class="form-select" data-shop-id="${shopId}">
-              <option value="trial" ${data.subscriptionStatus === 'Trial' ? 'selected' : ''}>Trial</option>
-              <option value="6months" ${data.subscriptionStatus === '6months' ? 'selected' : ''}>6 Months</option>
-              <option value="1year" ${data.subscriptionStatus === '1year' ? 'selected' : ''}>1 Year</option>
-              <option value="2years" ${data.subscriptionStatus === '2years' ? 'selected' : ''}>2 Years</option>
-            </select>
-          </td>
-          <td>${planEndsDate}</td>
-          <td>${approvedText}</td>
-          <td>
-            <button class="btn btn-success btn-sm approve-btn" data-shop-id="${shopId}">Approve</button>
-            <button class="btn btn-danger btn-sm revoke-btn" data-shop-id="${shopId}">Revoke</button>
-          </td>
-        `;
-        shopListBody.appendChild(tr);
-      });
-
-      document.querySelectorAll('.approve-btn').forEach(btn => {
-        btn.addEventListener('click', () => handleApproval(btn.dataset.shopId, true));
-      });
-      document.querySelectorAll('.revoke-btn').forEach(btn => {
-        btn.addEventListener('click', () => handleApproval(btn.dataset.shopId, false));
-      });
-      document.querySelectorAll('select.form-select').forEach(sel => {
-        sel.addEventListener('change', (e) => handlePlanChange(e.target.dataset.shopId, e.target.value));
-      });
+    if (shopsSnap.empty) {
+      shopListBody.innerHTML = `<tr><td colspan="9" class="text-center">No shops found.</td></tr>`;
+      return;
     }
+    shopListBody.innerHTML = '';
+    shopsSnap.forEach(docSnap => {
+      const data = docSnap.data();
+      const docId = docSnap.id;
+      const subEndDate = data.subscriptionEnds ? data.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
+      const approvedBadge = data.isApproved ? `<span class="badge bg-success">Approved</span>` : `<span class="badge bg-warning">Pending</span>`;
+      const planPriceMap = {
+        trial: 'Free',
+        '6months': '5999',
+        '1year': '10999',
+        '2years': '19999'
+      };
+      const currentPrice = planPriceMap[data.subscriptionStatus] || 'N/A';
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${docId}</td>
+        <td>${data.shopName}</td>
+        <td>${data.email}</td>
+        <td>${data.mobileNo}</td>
+        <td>
+          <select class="form-select" data-doc-id="${docId}">
+            <option value="trial" ${data.subscriptionStatus === 'trial' ? 'selected' : ''}>Trial</option>
+            <option value="6months" ${data.subscriptionStatus === '6months' ? 'selected' : ''}>6 Months</option>
+            <option value="1year" ${data.subscriptionStatus === '1year' ? 'selected' : ''}>1 Year</option>
+            <option value="2years" ${data.subscriptionStatus === '2years' ? 'selected' : ''}>2 Years</option>
+          </select>
+        </td>
+        <td>₹${currentPrice}</td>
+        <td>${subEndDate}</td>
+        <td>${approvedBadge}</td>
+        <td>
+          <button class="btn btn-success btn-sm approve-btn" data-doc-id="${docId}">Approve</button>
+          <button class="btn btn-danger btn-sm revoke-btn" data-doc-id="${docId}">Revoke</button>
+        </td>
+      `;
+      shopListBody.appendChild(tr);
+    });
+
+    attachEventListeners();
   }
 
-  async function handleApproval(shopId, approved) {
-    if(!confirm(`${approved ? 'Approve' : 'Revoke'} this shop?`)) return;
+  function attachEventListeners() {
+    document.querySelectorAll('.approve-btn').forEach(btn =>
+      btn.addEventListener('click', () => toggleApproval(btn.dataset.docId, true))
+    );
+    document.querySelectorAll('.revoke-btn').forEach(btn =>
+      btn.addEventListener('click', () => toggleApproval(btn.dataset.docId, false))
+    );
+    document.querySelectorAll('select.form-select').forEach(sel =>
+      sel.addEventListener('change', e => changePlan(e.target.dataset.docId, e.target.value))
+    );
+  }
+
+  async function toggleApproval(docId, approve) {
+    const confirmation = approve ? 'Approve this shop?' : 'Revoke approval?';
+    if (!confirm(confirmation)) return;
+
     try {
       let subscriptionEnds = null;
-      let subscriptionStatus = 'Trial';
-      if(approved){
-        const selectBox = document.querySelector(`select[data-shop-id="${shopId}"]`);
-        subscriptionStatus = selectBox ? selectBox.value : 'Trial';
-        if(subscriptionStatus === '6months'){
-          subscriptionEnds = new Date(Date.now() + 6*30*24*60*60*1000);
-        } else if(subscriptionStatus === '1year'){
-          subscriptionEnds = new Date(Date.now() + 365*24*60*60*1000);
-        } else if(subscriptionStatus === '2years'){
-          subscriptionEnds = new Date(Date.now() + 2*365*24*60*60*1000);
-        } else {
-          subscriptionEnds = new Date(Date.now() + 7*24*60*60*1000);
+
+      if (approve) {
+        const select = document.querySelector(`select[data-doc-id="${docId}"]`);
+        const plan = select ? select.value : 'trial';
+
+        switch (plan) {
+          case '6months':
+            subscriptionEnds = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
+            break;
+          case '1year':
+            subscriptionEnds = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+            break;
+          case '2years':
+            subscriptionEnds = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000);
+            break;
+          default:
+            subscriptionEnds = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
         }
       }
-      await updateDoc(doc(db, 'shops', shopId), {
-        isApproved: approved,
-        subscriptionStatus: approved ? subscriptionStatus : 'Not Approved',
-        subscriptionEnds: subscriptionEnds ? subscriptionEnds : null,
+
+      await updateDoc(doc(db, 'shops', docId), {
+        isApproved: approve,
+        subscriptionStatus: approve ? (document.querySelector(`select[data-doc-id="${docId}"]`).value) : 'revoked',
+        subscriptionEnds: subscriptionEnds,
         updatedAt: serverTimestamp()
       });
-      alert(`Shop has been ${approved ? 'approved' : 'revoked'} successfully`);
+
+      alert(`Shop ${approve ? 'approved' : 'revoked'} successfully`);
       loadShopList();
-    } catch(error){
-      alert('Failed to update status: ' + error.message);
-      console.error(error);
+    } catch (err) {
+      alert('Failed to update: ' + err.message);
+      console.error(err);
     }
   }
 
-  async function handlePlanChange(shopId, newPlan) {
+  async function changePlan(docId, newPlan) {
     try {
       let subscriptionEnds = null;
-      if(newPlan === '6months'){
-        subscriptionEnds = new Date(Date.now() + 6*30*24*60*60*1000);
-      } else if(newPlan === '1year'){
-        subscriptionEnds = new Date(Date.now() + 365*24*60*60*1000);
-      } else if(newPlan === '2years'){
-        subscriptionEnds = new Date(Date.now() + 2*365*24*60*60*1000);
-      } else if(newPlan === 'trial'){
-        subscriptionEnds = new Date(Date.now() + 7*24*60*60*1000);
+
+      switch (newPlan) {
+        case '6months':
+          subscriptionEnds = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
+          break;
+        case '1year':
+          subscriptionEnds = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+          break;
+        case '2years':
+          subscriptionEnds = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          subscriptionEnds = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
       }
-      await updateDoc(doc(db, 'shops', shopId), {
+
+      await updateDoc(doc(db, 'shops', docId), {
         subscriptionStatus: newPlan,
         subscriptionEnds: subscriptionEnds,
         updatedAt: serverTimestamp()
       });
-      alert(`Plan updated successfully`);
+
+      alert('Plan updated successfully');
       loadShopList();
-    } catch(error){
-      alert('Failed to update plan: ' + error.message);
-      console.error(error);
+    } catch (err) {
+      alert('Failed to update plan: ' + err.message);
+      console.error(err);
     }
   }
 
-  window.onload = () => loadShopList();
+  window.onload = () => {
+    loadShopList();
+  };
 </script>
 
 </body>
