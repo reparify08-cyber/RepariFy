@@ -6,26 +6,13 @@
 <title>Admin Panel - RepariFy</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 <style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    padding-top: 80px;
-    background-color: #f8f9fa;
-  }
-  .container {
-    max-width: 1150px;
-  }
-  h2 {
-    font-weight: 700;
-    color: #007bff;
-    margin-bottom: 20px;
-  }
-  .table-responsive {
-    max-height: 600px;
-    overflow-y: auto;
-  }
-  .btn-primary, .btn-success, .btn-danger {
-    min-width: 100px;
-  }
+  body { font-family: 'Poppins', sans-serif; background: #f8f9fa; padding-top: 80px; }
+  .container { max-width: 1300px; }
+  h2 { font-weight: 700; color: #007bff; margin-bottom: 20px; }
+  .table-responsive { max-height: 550px; overflow-y: auto; margin-bottom: 30px; }
+  .btn-primary, .btn-success, .btn-danger { min-width: 100px; }
+  .filter-group, .export-group, .plan-pricing-group { margin-bottom: 20px; }
+  .search-box input { max-width: 300px; }
 </style>
 </head>
 <body>
@@ -38,9 +25,29 @@
 </nav>
 
 <div class="container">
-  <h2>Manage Shops and Plans</h2>
+  <h2>Manage Shop Registrations & Plans</h2>
+
+  <div class="row">
+    <div class="col-md-6 filter-group d-flex align-items-center gap-3">
+      <input class="form-control search-box" type="search" placeholder="Search by Mobile Number or Shop Name" id="searchInput" />
+      <select id="filterSelect" class="form-select" style="max-width: 220px;">
+        <option value="all">All Shops</option>
+        <option value="approved">Approved</option>
+        <option value="notapproved">Not Approved</option>
+        <option value="trial">Trial Plan</option>
+        <option value="subscription">Subscribed</option>
+      </select>
+      <button id="clearFilterBtn" class="btn btn-secondary btn-sm">Clear</button>
+    </div>
+
+    <div class="col-md-6 export-group d-flex justify-content-end gap-2">
+      <button id="exportCsvBtn" class="btn btn-success btn-sm">Export CSV</button>
+      <button id="exportPdfBtn" class="btn btn-danger btn-sm">Export PDF</button>
+    </div>
+  </div>
+
   <div class="table-responsive">
-    <table class="table table-striped table-bordered align-middle text-center">
+    <table class="table table-striped table-bordered align-middle text-center" id="shopsTable">
       <thead class="table-dark">
         <tr>
           <th>Shop ID</th>
@@ -50,7 +57,7 @@
           <th>Plan</th>
           <th>Price (₹)</th>
           <th>Subscription Ends</th>
-          <th>Approved</th>
+          <th>Approval Status</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -59,11 +66,38 @@
       </tbody>
     </table>
   </div>
+
+  <div class="plan-pricing-group">
+    <h4>Manage Product Prices</h4>
+    <div class="row g-3 align-items-center">
+      <div class="col-auto">
+        <label class="form-label">6 Months Price:</label>
+        <input type="number" class="form-control" id="plan6m" min="0" />
+      </div>
+      <div class="col-auto">
+        <label class="form-label">1 Year Price:</label>
+        <input type="number" class="form-control" id="plan1y" min="0" />
+      </div>
+      <div class="col-auto">
+        <label class="form-label">2 Years Price:</label>
+        <input type="number" class="form-control" id="plan2y" min="0" />
+      </div>
+      <div class="col-auto">
+        <button class="btn btn-primary" id="savePlanPricesBtn">Save Prices</button>
+      </div>
+      <div id="planStatusMsg" class="mt-2"></div>
+    </div>
+  </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script>
+  const { jsPDF } = window.jspdf;
+</script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getFirestore, collection, getDocs, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+  import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
   import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
   const firebaseConfig = {
@@ -80,165 +114,311 @@
   const db = getFirestore();
   const auth = getAuth();
 
-  // Logout Button
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    signOut(auth).then(() => {
-      window.location.href = 'login.html';
-    });
-  });
-
-  // Redirect non-admin users off this page
-  onAuthStateChanged(auth, user => {
-    if (!user) {
-      window.location.href = 'login.html';
-      return;
-    }
-    if (user.email !== 'admin@repari.fy') {
-      alert("Access Denied: You are not authorized.");
-      auth.signOut();
-      window.location.href = 'login.html';
-    }
-  });
-
   const shopListBody = document.getElementById('shopListBody');
+  const shopsTable = document.getElementById('shopsTable');
+  let shopsData = [];
 
-  async function loadShopList() {
-    const shopsSnap = await getDocs(collection(db, 'shops'));
-    if (shopsSnap.empty) {
-      shopListBody.innerHTML = `<tr><td colspan="9" class="text-center">No shops found.</td></tr>`;
+  // Authentication check and redirect if not admin
+  onAuthStateChanged(auth, (user) => {
+    if (!user || user.email !== 'admin@repari.fy') {
+      window.location.href = 'login.html';
+    }
+  });
+
+  // Load shops real-time
+  onSnapshot(collection(db, 'shops'), (snapshot) => {
+    shopsData = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+    renderTable(shopsData);
+  });
+
+  // Render table rows
+  function renderTable(data) {
+    if (data.length === 0) {
+      shopListBody.innerHTML = `<tr><td colspan="9" class="text-center">No matching records found</td></tr>`;
       return;
     }
     shopListBody.innerHTML = '';
-    shopsSnap.forEach(docSnap => {
-      const data = docSnap.data();
-      const docId = docSnap.id;
-      const subEndDate = data.subscriptionEnds ? data.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
-      const approvedBadge = data.isApproved ? `<span class="badge bg-success">Approved</span>` : `<span class="badge bg-warning">Pending</span>`;
+    data.forEach(shop => {
       const planPriceMap = {
         trial: 'Free',
-        '6months': '5999',
-        '1year': '10999',
-        '2years': '19999'
+        6months: document.getElementById('plan6m').value || 'N/A',
+        1year: document.getElementById('plan1y').value || 'N/A',
+        2years: document.getElementById('plan2y').value || 'N/A'
       };
-      const currentPrice = planPriceMap[data.subscriptionStatus] || 'N/A';
+      const planPrice = planPriceMap[shop.subscriptionStatus?.toLowerCase()] || 'N/A';
+      const subscriptionEnds = shop.subscriptionEnds?.toDate ? shop.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
+      const approvedBadge = shop.isApproved ? `<span class="badge bg-success">Approved</span>` : `<span class="badge bg-warning">Pending</span>`;
 
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${docId}</td>
-        <td>${data.shopName}</td>
-        <td>${data.email}</td>
-        <td>${data.mobileNo}</td>
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${shop.id}</td>
+        <td>${shop.shopName || '-'}</td>
+        <td>${shop.email || '-'}</td>
+        <td>${shop.mobileNo || '-'}</td>
         <td>
-          <select class="form-select" data-doc-id="${docId}">
-            <option value="trial" ${data.subscriptionStatus === 'trial' ? 'selected' : ''}>Trial</option>
-            <option value="6months" ${data.subscriptionStatus === '6months' ? 'selected' : ''}>6 Months</option>
-            <option value="1year" ${data.subscriptionStatus === '1year' ? 'selected' : ''}>1 Year</option>
-            <option value="2years" ${data.subscriptionStatus === '2years' ? 'selected' : ''}>2 Years</option>
+          <select class="form-select form-select-sm" data-id="${shop.id}">
+            <option value="trial" ${shop.subscriptionStatus === 'trial' ? 'selected' : ''}>Trial</option>
+            <option value="6months" ${shop.subscriptionStatus === '6months' ? 'selected' : ''}>6 Months</option>
+            <option value="1year" ${shop.subscriptionStatus === '1year' ? 'selected' : ''}>1 Year</option>
+            <option value="2years" ${shop.subscriptionStatus === '2years' ? 'selected' : ''}>2 Years</option>
           </select>
         </td>
-        <td>₹${currentPrice}</td>
-        <td>${subEndDate}</td>
+        <td>₹${planPrice}</td>
+        <td>${subscriptionEnds}</td>
         <td>${approvedBadge}</td>
         <td>
-          <button class="btn btn-success btn-sm approve-btn" data-doc-id="${docId}">Approve</button>
-          <button class="btn btn-danger btn-sm revoke-btn" data-doc-id="${docId}">Revoke</button>
+          <button class="btn btn-success btn-sm approve-btn" data-id="${shop.id}">Approve</button>
+          <button class="btn btn-danger btn-sm revoke-btn" data-id="${shop.id}">Revoke</button>
         </td>
       `;
-      shopListBody.appendChild(tr);
+      shopListBody.appendChild(row);
     });
-
-    attachEventListeners();
+    attachEvents();
   }
 
-  function attachEventListeners() {
-    document.querySelectorAll('.approve-btn').forEach(btn =>
-      btn.addEventListener('click', () => toggleApproval(btn.dataset.docId, true))
-    );
-    document.querySelectorAll('.revoke-btn').forEach(btn =>
-      btn.addEventListener('click', () => toggleApproval(btn.dataset.docId, false))
-    );
-    document.querySelectorAll('select.form-select').forEach(sel =>
-      sel.addEventListener('change', e => changePlan(e.target.dataset.docId, e.target.value))
-    );
+  // Attach event listeners to buttons and selects
+  function attachEvents() {
+    document.querySelectorAll('.approve-btn').forEach(btn => {
+      btn.onclick = () => handleApproval(btn.dataset.id, true);
+    });
+    document.querySelectorAll('.revoke-btn').forEach(btn => {
+      btn.onclick = () => handleApproval(btn.dataset.id, false);
+    });
+    document.querySelectorAll('select.form-select').forEach(select => {
+      select.onchange = (e) => handlePlanChange(e.target.dataset.id, e.target.value);
+    });
   }
 
-  async function toggleApproval(docId, approve) {
-    const confirmation = approve ? 'Approve this shop?' : 'Revoke approval?';
-    if (!confirm(confirmation)) return;
-
-    try {
-      let subscriptionEnds = null;
-
-      if (approve) {
-        const select = document.querySelector(`select[data-doc-id="${docId}"]`);
-        const plan = select ? select.value : 'trial';
-
-        switch (plan) {
-          case '6months':
-            subscriptionEnds = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
-            break;
-          case '1year':
-            subscriptionEnds = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
-            break;
-          case '2years':
-            subscriptionEnds = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000);
-            break;
-          default:
-            subscriptionEnds = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-        }
-      }
-
-      await updateDoc(doc(db, 'shops', docId), {
-        isApproved: approve,
-        subscriptionStatus: approve ? (document.querySelector(`select[data-doc-id="${docId}"]`).value) : 'revoked',
-        subscriptionEnds: subscriptionEnds,
-        updatedAt: serverTimestamp()
-      });
-
-      alert(`Shop ${approve ? 'approved' : 'revoked'} successfully`);
-      loadShopList();
-    } catch (err) {
-      alert('Failed to update: ' + err.message);
-      console.error(err);
-    }
-  }
-
-  async function changePlan(docId, newPlan) {
-    try {
-      let subscriptionEnds = null;
-
-      switch (newPlan) {
+  // Handle approval toggle
+  async function handleApproval(id, approve) {
+    if (!confirm(`${approve ? 'Approve' : 'Revoke'} this shop?`)) return;
+    const now = new Date();
+    let subscriptionEnds = null;
+    if (approve) {
+      const plan = document.querySelector(`select[data-id="${id}"]`).value;
+      switch (plan) {
         case '6months':
-          subscriptionEnds = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000);
+          subscriptionEnds = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
           break;
         case '1year':
-          subscriptionEnds = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+          subscriptionEnds = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
           break;
         case '2years':
-          subscriptionEnds = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000);
+          subscriptionEnds = new Date(now.getTime() + 2 * 365 * 24 * 60 * 60 * 1000);
           break;
         default:
-          subscriptionEnds = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+          subscriptionEnds = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       }
-
-      await updateDoc(doc(db, 'shops', docId), {
-        subscriptionStatus: newPlan,
+    }
+    try {
+      await updateDoc(doc(db, 'shops', id), {
+        isApproved: approve,
+        subscriptionStatus: approve ? document.querySelector(`select[data-id="${id}"]`).value : 'revoked',
         subscriptionEnds: subscriptionEnds,
         updatedAt: serverTimestamp()
       });
-
-      alert('Plan updated successfully');
-      loadShopList();
-    } catch (err) {
-      alert('Failed to update plan: ' + err.message);
-      console.error(err);
+      alert(`Shop ${approve ? 'approved' : 'revoked'}.`);
+    } catch (error) {
+      alert('Error updating shop: ' + error.message);
     }
   }
 
-  window.onload = () => {
-    loadShopList();
-  };
+  // Handle plan change
+  async function handlePlanChange(id, plan) {
+    const now = new Date();
+    let subscriptionEnds;
+    switch (plan) {
+      case '6months':
+        subscriptionEnds = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000);
+        break;
+      case '1year':
+        subscriptionEnds = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+        break;
+      case '2years':
+        subscriptionEnds = new Date(now.getTime() + 2 * 365 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        subscriptionEnds = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    }
+    try {
+      await updateDoc(doc(db, 'shops', id), {
+        subscriptionStatus: plan,
+        subscriptionEnds: subscriptionEnds,
+        updatedAt: serverTimestamp()
+      });
+      alert('Plan updated successfully.');
+    } catch (error) {
+      alert('Error updating plan: ' + error.message);
+    }
+  }
+
+  // FILTERING & SEARCH
+  const searchInput = document.getElementById('searchInput');
+  const filterSelect = document.getElementById('filterSelect');
+  const clearFilterBtn = document.getElementById('clearFilterBtn');
+
+  searchInput.addEventListener('input', applyFilters);
+  filterSelect.addEventListener('change', applyFilters);
+  clearFilterBtn.addEventListener('click', () => {
+    searchInput.value = '';
+    filterSelect.value = 'all';
+    renderTable(shopsData);
+  });
+
+  function applyFilters() {
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const filter = filterSelect.value;
+
+    let filtered = shopsData;
+
+    if (filter === 'approved') {
+      filtered = filtered.filter(x => x.isApproved);
+    } else if (filter === 'notapproved') {
+      filtered = filtered.filter(x => !x.isApproved);
+    } else if (filter === 'trial') {
+      filtered = filtered.filter(x => x.subscriptionStatus === 'trial');
+    } else if (filter === 'subscription') {
+      filtered = filtered.filter(x => x.subscriptionStatus !== 'trial' && x.isApproved);
+    }
+    if (searchTerm) {
+      filtered = filtered.filter(x => 
+        (x.mobileNo && x.mobileNo.toLowerCase().includes(searchTerm)) ||
+        (x.shopName && x.shopName.toLowerCase().includes(searchTerm))
+      );
+    }
+    renderTable(filtered);
+  }
+
+  // EXPORT CSV & PDF
+  document.getElementById('exportCsvBtn').addEventListener('click', () => exportCSV(shopsData));
+  document.getElementById('exportPdfBtn').addEventListener('click', () => exportPDF(shopsData));
+
+  function exportCSV(data) {
+    if (!data.length) {
+      alert('No data to export!');
+      return;
+    }
+    const headers = ['Shop ID', 'Shop Name', 'Email', 'Mobile', 'Plan', 'Price', 'Subscription Ends', 'Approval Status'];
+    const csvRows = [headers.join(',')];
+
+    data.forEach(shop => {
+      const approval = shop.isApproved ? 'Approved' : 'Pending';
+      const planPriceMap = {
+        trial: 'Free',
+        6months: document.getElementById('plan6m').value || 'N/A',
+        1year: document.getElementById('plan1y').value || 'N/A',
+        2years: document.getElementById('plan2y').value || 'N/A'
+      };
+      let price = planPriceMap[shop.subscriptionStatus?.toLowerCase()] || 'N/A';
+      let ends = shop.subscriptionEnds?.toDate ? shop.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
+      csvRows.push([
+        `"${shop.id}"`,
+        `"${shop.shopName}"`,
+        `"${shop.email}"`,
+        `"${shop.mobileNo}"`,
+        `"${shop.subscriptionStatus}"`,
+        `"₹${price}"`,
+        `"${ends}"`,
+        `"${approval}"`
+      ].join(','));
+    });
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.setAttribute('href', URL.createObjectURL(blob));
+    link.setAttribute('download', 'RepariFy_shops_export.csv');
+    link.click();
+  }
+
+  function exportPDF(data) {
+    if (!data.length) {
+      alert('No data to export!');
+      return;
+    }
+    const doc = new jsPDF();
+    doc.setFontSize(14);
+    doc.text('RepariFy Shops Export', 14, 22);
+    const tableColumn = ['Shop ID', 'Shop Name', 'Email', 'Mobile', 'Plan', 'Price', 'Subscription Ends', 'Approval'];
+    const tableRows = [];
+
+    data.forEach(shop => {
+      const approval = shop.isApproved ? 'Approved' : 'Pending';
+      const planPriceMap = {
+        trial: 'Free',
+        6months: document.getElementById('plan6m').value || 'N/A',
+        1year: document.getElementById('plan1y').value || 'N/A',
+        2years: document.getElementById('plan2y').value || 'N/A'
+      };
+      let price = planPriceMap[shop.subscriptionStatus?.toLowerCase()] || 'N/A';
+      let ends = shop.subscriptionEnds?.toDate ? shop.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
+      const row = [
+        shop.id,
+        shop.shopName || '',
+        shop.email || '',
+        shop.mobileNo || '',
+        shop.subscriptionStatus || '',
+        `₹${price}`,
+        ends,
+        approval
+      ];
+      tableRows.push(row);
+    });
+
+    // AutoTable plugin can be used but here manual simple print for brevity
+    let y = 30;
+    doc.setFontSize(10);
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: y,
+      margin: {top: 10},
+      theme: 'grid',
+    });
+
+    doc.save('RepariFy_shops_export.pdf');
+  }
+
+  // Load current prices
+  async function loadPlanPrices() {
+    const docSnap = await getDoc(doc(db, 'settings', 'planPrices'));
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      document.getElementById('plan6m').value = data['6months'] || 5999;
+      document.getElementById('plan1y').value = data['1year'] || 10999;
+      document.getElementById('plan2y').value = data['2years'] || 19999;
+    }
+  }
+
+  // Save prices handler
+  document.getElementById('savePlanPricesBtn').addEventListener('click', async () => {
+    const p6 = parseInt(document.getElementById('plan6m').value) || 0;
+    const p1 = parseInt(document.getElementById('plan1y').value) || 0;
+    const p2 = parseInt(document.getElementById('plan2y').value) || 0;
+    try {
+      await updateDoc(doc(db, 'settings', 'planPrices'), {
+        '6months': p6,
+        '1year': p1,
+        '2years': p2,
+        updatedAt: serverTimestamp()
+      }, {merge:true});
+      document.getElementById('planStatusMsg').textContent = 'Plan prices updated successfully.';
+      setTimeout(() => {
+        document.getElementById('planStatusMsg').textContent = '';
+      }, 2500);
+    } catch (err) {
+      alert('Failed to update plan prices: ' + err.message);
+    }
+  });
+
+  loadPlanPrices();
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 
 </body>
 </html>
