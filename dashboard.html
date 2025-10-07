@@ -26,6 +26,7 @@
     .btn-actions > button {
       margin-right: 4px;
     }
+    /* Style for Unlocking Service Selection */
     .service-card {
         cursor: pointer;
         transition: transform 0.2s, box-shadow 0.2s;
@@ -57,7 +58,10 @@
       <button class="nav-link" id="computer-tab" data-bs-toggle="tab" data-bs-target="#computer" type="button" role="tab" aria-controls="computer" aria-selected="false">Computer Repair</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="unlocking-tab" data-bs-toggle="tab" data-bs-target="#unlocking" type="button" role="tab" aria-controls="unlocking" aria-selected="false">Unlocking Service</button>
+      <button class="nav-link" id="unlocking-legal-tab" data-bs-toggle="tab" data-bs-target="#unlocking-legal" type="button" role="tab" aria-controls="unlocking-legal" aria-selected="false">Unlocking Legal Terms</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="unlocking-online-tab" data-bs-toggle="tab" data-bs-target="#unlocking-online" type="button" role="tab" aria-controls="unlocking-online" aria-selected="false">Online Unlocking Order</button>
     </li>
   </ul>
 
@@ -75,12 +79,12 @@
           <input type="text" id="mDeviceModel" class="form-control" placeholder="Device Model (e.g. Samsung A50)" required />
         </div>
         <div class="mb-3">
-          <input type="text" id="mImei" class="form-control" placeholder="IMEI Number (15 digits)" pattern="\\d{15}" maxlength="15" />
+          <input type="text" id="mImei" class="form-control" placeholder="IMEI Number (15 digits)" maxlength="15" />
         </div>
         <div class="mb-3">
           <textarea id="mIssueDesc" class="form-control" placeholder="Issue Description" rows="3" required></textarea>
         </div>
-        <button type="submit" class="btn btn-primary w-100">Create Mobile Job</button>
+        <button type="submit" class="btn btn-primary w-100">Create Mobile Job & Generate Bill</button>
       </form>
     </div>
 
@@ -110,15 +114,76 @@
         <div class="mb-3">
           <textarea id="cIssueDesc" class="form-control" placeholder="Issue Description" rows="3" required></textarea>
         </div>
-        <button type="submit" class="btn btn-primary w-100">Create Computer Job</button>
+        <button type="submit" class="btn btn-primary w-100">Create Computer Job & Generate Bill</button>
       </form>
     </div>
 
-    <div class="tab-pane fade" id="unlocking" role="tabpanel" aria-labelledby="unlocking-tab">
+    <div class="tab-pane fade" id="unlocking-legal" role="tabpanel" aria-labelledby="unlocking-legal-tab">
+      <h4>Generate Legal Declaration for Unlocking</h4>
+      <div class="alert alert-warning">
+          **Shop Details:** <span id="unlockShopNameLegal" class="fw-bold">...</span> | **Contact:** <span id="unlockShopContactLegal">...</span>
+      </div>
+      <form id="legalDeclarationForm">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Brand & Model:</label>
+                <input type="text" id="ulBrandModel" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">IMEI Number:</label>
+                <input type="text" id="ulImei" class="form-control" pattern="\\d{15}" maxlength="15" required />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Type of Unlocking Required:</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="ulPin" checked />
+                    <label class="form-check-label" for="ulPin">Pattern/PIN Unlock</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="ulFrp" />
+                    <label class="form-check-label" for="ulFrp">FRP (Google Account) Unlock</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="ulNetwork" />
+                    <label class="form-check-label" for="ulNetwork">Network Unlock</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="ulOthers" />
+                    <label class="form-check-label" for="ulOthers">Others</label>
+                </div>
+            </div>
+            <hr class="mt-4"/>
+            <h5 class="col-12">Customer Details</h5>
+            <div class="col-md-6">
+                <label class="form-label">Full Name:</label>
+                <input type="text" id="ulFullName" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Phone Number:</label>
+                <input type="tel" id="ulPhoneNumber" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">ID Type & Number (Aadhaar/Voter/etc.):</label>
+                <input type="text" id="ulIdTypeNumber" class="form-control" required />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Date:</label>
+                <input type="date" id="ulDate" class="form-control" required />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Address:</label>
+                <textarea id="ulAddress" class="form-control" rows="2" required></textarea>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-danger w-100 mt-4">Generate & Print Legal Declaration PDF</button>
+      </form>
+    </div>
+
+    <div class="tab-pane fade" id="unlocking-online" role="tabpanel" aria-labelledby="unlocking-online-tab">
       <h4 class="mb-4">Order Online Unlocking Service</h4>
       
       <div class="alert alert-info" role="alert">
-          **Your Shop:** <span id="unlockShopName" class="fw-bold">...</span> | **Contact:** <span id="unlockShopContact">...</span>
+          **Your Shop:** <span id="unlockShopNameOnline" class="fw-bold">...</span> | **Contact:** <span id="unlockShopContactOnline">...</span>
       </div>
 
       <div class="row">
@@ -157,7 +222,7 @@
                   </div>
                   
                   <button type="submit" class="btn btn-success w-100" id="orderUnlockBtn" disabled>
-                      Place Order & Pay Technician
+                      Place Order
                   </button>
                   <p class="text-danger mt-2" id="orderErrorMsg"></p>
               </form>
@@ -166,7 +231,7 @@
     </div>
   </div>
 
-  <h4 class="mt-4">Recent Jobs</h4>
+  <h4 class="mt-4">Recent Jobs (Repair)</h4>
   <div class="table-responsive">
     <table class="table table-striped table-hover" id="jobsTable">
       <thead>
@@ -176,19 +241,18 @@
           <th>Customer Name</th>
           <th>Mobile No.</th>
           <th>Device Model</th>
-          <th>IMEI Number</th>
           <th>Status</th>
-          <th>Estimated Cost (₹)</th>
+          <th>Final Cost (₹)</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody id="jobs-table-body">
-        <tr><td colspan="9" class="text-center text-muted">Loading recent jobs...</td></tr>
+        <tr><td colspan="8" class="text-center text-muted">Loading recent jobs...</td></tr>
       </tbody>
     </table>
   </div>
 
-  <h4 class="mt-4">Recent Unlocking Orders</h4>
+  <h4 class="mt-4">Recent Unlocking Orders (Online)</h4>
   <div class="table-responsive">
     <table class="table table-striped table-hover" id="unlockOrdersTable">
       <thead>
@@ -213,40 +277,24 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <form class="modal-content" id="editJobForm">
       <div class="modal-header">
-        <h5 class="modal-title">Update Job</h5>
+        <h5 class="modal-title">Update Job & Finalize Bill</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <input type="hidden" id="editJobId" />
         <div class="row mb-3">
-          <div class="col-md-4">
+          <div class="col-md-6">
             <label for="editDeviceType" class="form-label">Device Type</label>
-            <select id="editDeviceType" class="form-select" required>
-              <option value="mobile">Mobile Phone</option>
-              <option value="computer">Computer / Laptop</option>
-              <option value="unlocking">Unlocking Service</option>
-            </select>
+            <input type="text" id="editDeviceType" class="form-control" readonly />
           </div>
-          <div class="col-md-8">
+          <div class="col-md-6">
             <label for="editDeviceName" class="form-label">Device Model</label>
             <input type="text" id="editDeviceName" class="form-control" required />
           </div>
         </div>
         <div class="mb-3">
-          <label for="editCustomerName" class="form-label">Customer Name</label>
-          <input type="text" id="editCustomerName" class="form-control" required />
-        </div>
-        <div class="mb-3">
-          <label for="editCustomerMobile" class="form-label">Customer Mobile</label>
-          <input type="text" id="editCustomerMobile" class="form-control" required />
-        </div>
-        <div class="mb-3">
-          <label for="editImeiNumber" class="form-label">IMEI Number</label>
-          <input type="text" id="editImeiNumber" class="form-control" />
-        </div>
-        <div class="mb-3">
           <label for="editIssueDescription" class="form-label">Issue Description</label>
-          <textarea id="editIssueDescription" class="form-control" rows="3" required></textarea>
+          <textarea id="editIssueDescription" class="form-control" rows="2" required></textarea>
         </div>
         <div class="mb-3">
           <label for="editCurrentStatus" class="form-label">Current Status</label>
@@ -259,14 +307,15 @@
           </select>
         </div>
         <div class="mb-3">
-          <label for="editEstimatedCost" class="form-label">Estimated Cost (₹)</label>
-          <input type="number" id="editEstimatedCost" class="form-control" />
+          <label for="editServiceCharge" class="form-label">Service Charge (₹)</label>
+          <input type="number" id="editServiceCharge" class="form-control" value="0" min="0" />
         </div>
         <hr/>
-        <div class="mb-3">
-          <button type="button" class="btn btn-outline-info" id="managePartsBtn">Manage Parts</button>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+            <h6>Parts Used (Final Bill Items)</h6>
+            <button type="button" class="btn btn-outline-info btn-sm" id="managePartsBtn">Add/View Parts</button>
         </div>
-        <div id="partsContainer"></div>
+        <div id="partsContainer" class="border p-2 rounded"></div>
       </div>
       <div class="modal-footer">
         <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -328,7 +377,7 @@ onAuthStateChanged(auth, user => {
           listenForUnlockRates();
           listenForUnlockOrders();
           listenForTechnicians();
-          fillUnlockingShopDetails();
+          fillShopDetails();
         } else {
           alert("Access denied, not approved or revoked.");
           signOut(auth);
@@ -352,10 +401,14 @@ document.getElementById("logoutBtn").addEventListener("click", () =>
 );
 
 // --- Shop Data Display ---
-function fillUnlockingShopDetails() {
+function fillShopDetails() {
     if (shopData) {
-        document.getElementById("unlockShopName").textContent = shopData.shopName || "N/A";
-        document.getElementById("unlockShopContact").textContent = shopData.mobileNo || "N/A";
+        // For Unlocking Legal Tab
+        document.getElementById("unlockShopNameLegal").textContent = shopData.shopName || "N/A";
+        document.getElementById("unlockShopContactLegal").textContent = shopData.mobileNo || "N/A";
+        // For Online Unlocking Tab
+        document.getElementById("unlockShopNameOnline").textContent = shopData.shopName || "N/A";
+        document.getElementById("unlockShopContactOnline").textContent = shopData.mobileNo || "N/A";
     }
 }
 
@@ -393,6 +446,11 @@ document.getElementById("computerJobForm").addEventListener("submit", e => {
   createJob("computer");
 });
 
+document.getElementById("legalDeclarationForm").addEventListener("submit", e => {
+    e.preventDefault();
+    generateLegalPdf();
+});
+
 document.getElementById("unlockingOrderForm").addEventListener("submit", e => {
   e.preventDefault();
   createUnlockOrder();
@@ -413,22 +471,21 @@ async function createJob(type) {
     customerMobile: form.querySelector(`input[id$='CustomerMobile']`).value.trim(),
     deviceType: type,
     deviceName: form.querySelector(isMobile ? "#mDeviceModel" : "#cDeviceModel").value.trim(),
-    // Fix: Computer job will have an empty IMEI string, preventing pattern error
     imeiNumber: isMobile ? form.querySelector("#mImei").value.trim().toUpperCase() : "", 
     issueDescription: form.querySelector("textarea").value.trim(),
     currentStatus: "Received",
-    estimatedCost: 0, 
+    serviceCharge: 0, // New field for service charge
     receivedOn: serverTimestamp(),
     shopId: currentUserId,
     shopName: shopData.shopName || "",
     parts: [],
-    workStartTime: null
   };
 
   try {
     const docRef = await addDoc(collection(db, "jobs"), newJob);
     alert("Job card created successfully!");
-    jobPrintConfirm(newJob, docRef.id);
+    // Job Print Confirmation now directs to the new professional PDF
+    jobPrintConfirm(newJob, docRef.id); 
     form.reset();
   } catch (err) {
     alert("Failed to create job card! Please try again.");
@@ -442,7 +499,7 @@ async function createUnlockOrder() {
         alert("Cannot place order: No active technicians.");
         return;
     }
-
+    // ... (same logic as before)
     const form = document.getElementById("unlockingOrderForm");
     const technicianId = getNextTechnicianId(); 
     
@@ -459,13 +516,13 @@ async function createUnlockOrder() {
         
         serviceId: form.serviceId.value,
         serviceName: document.getElementById("selectedServiceName").textContent,
-        servicePrice: parseFloat(form.servicePrice.value), // Price shop pays
+        servicePrice: parseFloat(form.servicePrice.value), 
         
         shopId: currentUserId,
         shopName: shopData.shopName || "",
         
         technicianId: technicianId,
-        status: "Pending", // Status for the technician to pick up
+        status: "Pending", 
         orderedAt: serverTimestamp()
     };
     
@@ -476,7 +533,6 @@ async function createUnlockOrder() {
         document.getElementById("selectedServiceName").textContent = "None Selected";
         document.getElementById("displayServicePrice").textContent = "0";
         document.getElementById("orderUnlockBtn").disabled = true;
-        // Deselect card
         document.querySelectorAll('.service-card').forEach(card => card.classList.remove('selected'));
 
     } catch (err) {
@@ -492,9 +548,10 @@ function listenForUnlockRates() {
         servicesList.innerHTML = '';
         if (snapshot.empty) {
             servicesList.innerHTML = `<p class="text-danger">No unlocking services are currently available. Contact Admin.</p>`;
+            document.getElementById("orderUnlockBtn").disabled = true;
             return;
         }
-
+        document.getElementById("orderUnlockBtn").disabled = true; // Still disabled until selection
         snapshot.forEach(doc => {
             const service = doc.data();
             const serviceHtml = `
@@ -538,7 +595,7 @@ function listenForJobs() {
       const tbody = document.getElementById("jobs-table-body");
       tbody.innerHTML = "";
       if (snapshot.empty) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">No recent local jobs found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">No recent local jobs found.</td></tr>`;
         return;
       }
       snapshot.forEach(doc => {
@@ -551,6 +608,7 @@ function listenForJobs() {
           Ready: "bg-success",
           Delivered: "bg-secondary"
         }[job.currentStatus] || "bg-info";
+        const totalCost = (job.serviceCharge || 0) + (job.parts?.reduce((sum, p) => sum + (p.quantity * p.price), 0) || 0);
 
         const row = `<tr>
           <td>${displayId}</td>
@@ -558,12 +616,11 @@ function listenForJobs() {
           <td>${job.customerName}</td>
           <td>${job.customerMobile}</td>
           <td>${job.deviceName}</td>
-          <td>${job.imeiNumber || "-"}</td>
           <td><span class="badge ${statusClass}">${job.currentStatus}</span></td>
-          <td>₹${job.estimatedCost || 0}</td>
+          <td>₹${totalCost.toLocaleString('en-IN')}</td>
           <td class="btn-actions">
-            <button class="btn btn-sm btn-outline-primary" onclick="window.openEditModal('${doc.id}')">Update</button>
-            <button class="btn btn-sm btn-outline-success" onclick="window.downloadJobPdf('${doc.id}')">PDF</button>
+            <button class="btn btn-sm btn-outline-primary" onclick="window.openEditModal('${doc.id}')">Update/Bill</button>
+            <button class="btn btn-sm btn-outline-success" onclick="window.downloadJobPdf('${doc.id}')">Print Bill</button>
           </td>
         </tr>`;
         tbody.insertAdjacentHTML("beforeend", row);
@@ -572,7 +629,7 @@ function listenForJobs() {
     err => {
       console.error(err);
       const tbody = document.getElementById("jobs-table-body");
-      tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Error loading jobs.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error loading jobs.</td></tr>`;
     }
   );
 }
@@ -616,62 +673,338 @@ function listenForUnlockOrders() {
 }
 
 
-// --- Job PDF Generation ---
+// --- Job PDF Download (New Professional Bill Format) ---
 window.downloadJobPdf = async function (jobId) {
     const docSnap = await getDoc(doc(db, "jobs", jobId));
     if (docSnap.exists()) {
-        generateJobPdf(docSnap.data(), docSnap.id.substring(0, 5).toUpperCase());
+        await generateProfessionalBillPdf(docSnap.data(), docSnap.id.substring(0, 5).toUpperCase());
     } else {
         alert("Job data not found.");
     }
 }
 
 function jobPrintConfirm(newJob, id){
-  if(confirm("Do you want to download the job card PDF?")){
-    generateJobPdf(newJob, id.substring(0, 5).toUpperCase());
+  if(confirm("Do you want to download the initial Job Bill PDF?")){
+    // Initial bill can be generated with 0 cost
+    generateProfessionalBillPdf(newJob, id.substring(0, 5).toUpperCase());
   }
 }
 
-// Simplified PDF Generator
-function generateJobPdf(data, id){
+// --- Professional Purchase Bill PDF Generator (Matching Screenshot) ---
+async function generateProfessionalBillPdf(data, id){
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({format:'a4'});
   const pageWidth = pdf.internal.pageSize.getWidth();
+  
+  // 1. Header (Shop Details - Matching Screenshot Style)
+  pdf.setFontSize(14);
+  pdf.setFont(pdf.getFontList().Helvetica, 'bold');
+  pdf.text(shopData.shopName.toUpperCase() || 'REPARIFY MOBILE SOLUTION', 105, 10, {align: 'center'});
+  pdf.setFontSize(9);
+  pdf.setFont(pdf.getFontList().Helvetica, 'normal');
+  pdf.text(`Branch: ${shopData.address || 'N/A'}`, 105, 15, {align: 'center'});
+  pdf.text(`Contact: ${shopData.mobileNo || 'N/A'} | Email: ${shopData.email || 'N/A'}`, 105, 20, {align: 'center'});
+  
+  pdf.setLineWidth(0.5);
+  pdf.line(10, 25, 200, 25); // Separator line
 
-  pdf.setFontSize(16);
-  pdf.text(`Job Card ID: ${id}`, pageWidth/2, 15, {align:'center'});
-  pdf.text(`Shop: ${shopData.shopName || ''}`, 15, 30);
+  // 2. Receipt Voucher Title
+  pdf.setFontSize(11);
+  pdf.setFont(pdf.getFontList().Helvetica, 'bold');
+  pdf.text('ADVANCE/FINAL REPAIR RECEIPT VOUCHER (JOB CARD)', 105, 30, {align: 'center'});
 
-  pdf.setFontSize(12);
-  pdf.text(`Customer Name: ${data.customerName}`, 15, 40);
-  pdf.text(`Mobile: ${data.customerMobile}`, 15, 50);
-  pdf.text(`Device Type: ${data.deviceType.charAt(0).toUpperCase()+data.deviceType.slice(1)}`, 15, 60);
-  pdf.text(`Device Model: ${data.deviceName}`, 15, 70);
-  pdf.text(`IMEI Number: ${data.imeiNumber || '-'}`, 15, 80);
-  pdf.text(`Issue: ${data.issueDescription}`, 15, 90);
-  pdf.text(`Status: ${data.currentStatus}`, 15, 100);
-  pdf.text(`Estimated Cost: ₹${data.estimatedCost || 0}`, 15, 110);
+  // 3. Details Boxes
+  pdf.setLineWidth(0.2);
+  pdf.rect(10, 35, 90, 35); // Left Box: Customer Details
+  pdf.rect(110, 35, 90, 35); // Right Box: Device/Job Details
 
-  if(data.parts && data.parts.length > 0){
-    pdf.text("Extra Parts:", 15, 120);
-    let totalPartCost = 0;
-    data.parts.forEach((part,i) => {
-      pdf.text(`- ${part.partName} x${part.quantity} @ ₹${part.price}`, 20, 130 + i*10);
-      totalPartCost += part.quantity * part.price;
-    });
-    pdf.text(`Total Part Cost: ₹${totalPartCost}`, 15, 130 + data.parts.length * 10 + 5);
+  pdf.setFontSize(9);
+  pdf.setFont(pdf.getFontList().Helvetica, 'bold');
+  pdf.text('Details of Customer (Billing Address)', 15, 40);
+  pdf.setFont(pdf.getFontList().Helvetica, 'normal');
+  pdf.text(`Name: ${data.customerName}`, 15, 45);
+  pdf.text(`Contact: ${data.customerMobile}`, 15, 50);
+  pdf.text(`Job ID: ${id}`, 15, 55);
+  pdf.text(`Received On: ${data.receivedOn?.toDate ? data.receivedOn.toDate().toLocaleDateString('en-US') : 'N/A'}`, 15, 60);
+
+  pdf.setFont(pdf.getFontList().Helvetica, 'bold');
+  pdf.text('Details of Device/Repair', 115, 40);
+  pdf.setFont(pdf.getFontList().Helvetica, 'normal');
+  pdf.text(`Device: ${data.deviceName}`, 115, 45);
+  pdf.text(`IMEI: ${data.imeiNumber || 'N/A'}`, 115, 50);
+  pdf.text(`Issue: ${data.issueDescription.substring(0, 30)}...`, 115, 55);
+  pdf.text(`Status: ${data.currentStatus}`, 115, 60);
+
+  // 4. Job/Parts Table
+  const tableHeaders = [['SL. No.', 'Description', 'Unit Price (₹)', 'Qty', 'Taxable Value (₹)']];
+  const tableBody = [];
+  let serial = 1;
+  let subTotal = 0;
+  
+  // A. Service Charge (If any)
+  const serviceCharge = parseFloat(data.serviceCharge || 0);
+  if (serviceCharge > 0) {
+      tableBody.push([
+          serial++, 
+          `Service Charge for ${data.deviceName} Repair`, 
+          serviceCharge.toFixed(2), 
+          1, 
+          serviceCharge.toFixed(2)
+      ]);
+      subTotal += serviceCharge;
   }
 
-  let datePrinted = new Date().toLocaleDateString('en-US');
-  pdf.text(`Printed on: ${datePrinted}`, 15, 170);
+  // B. Parts Used (If any)
+  if(data.parts && data.parts.length > 0){
+      data.parts.forEach(part => {
+          const partPrice = parseFloat(part.price || 0);
+          const totalPartValue = partPrice * (part.quantity || 1);
+          tableBody.push([
+              serial++, 
+              `${part.partName} Replacement Part`, 
+              partPrice.toFixed(2), 
+              part.quantity || 1, 
+              totalPartValue.toFixed(2)
+          ]);
+          subTotal += totalPartValue;
+      });
+  }
 
-  pdf.text("Powered by RepariFy Web", pageWidth/2, 280, {align: "center", fontSize: 8, fontStyle: "italic"});
+  // C. If table is empty (Initial Job Card)
+  if (tableBody.length === 0) {
+      tableBody.push([1, 'Initial Inspection/Estimate (₹0.00)', '0.00', 1, '0.00']);
+  }
 
-  pdf.save(`JobCard_${id}.pdf`);
+  // D. Autotable generation
+  pdf.autoTable({
+    startY: 75,
+    head: tableHeaders,
+    body: tableBody,
+    styles: { fontSize: 8, cellPadding: 2 },
+    headStyles: { fillColor: [230, 230, 230], textColor: [0, 0, 0], fontStyle: 'bold' },
+    columnStyles: {
+        0: { cellWidth: 10 }, 
+        2: { halign: 'right' }, 
+        3: { cellWidth: 15, halign: 'center' },
+        4: { halign: 'right' }
+    }
+  });
+
+  const finalY = pdf.lastAutoTable.finalY + 2;
+
+  // 5. Total Section
+  const totalAmountInWords = numToWords(subTotal) + " Only";
+  
+  pdf.setLineWidth(0.5);
+  pdf.line(10, finalY, 200, finalY); // Line above total
+
+  pdf.setFontSize(9);
+  pdf.setFont(pdf.getFontList().Helvetica, 'bold');
+  pdf.text('Total Amount (In Words):', 15, finalY + 5);
+  pdf.text(totalAmountInWords, 55, finalY + 5);
+
+  pdf.rect(140, finalY + 1, 60, 8); // Box for Taxable Value
+  pdf.text('Total Taxable Value (₹):', 142, finalY + 5);
+  pdf.text(subTotal.toFixed(2), 198, finalY + 5, {align: 'right'});
+
+  pdf.rect(140, finalY + 9, 60, 8); // Box for Grand Total
+  pdf.text('GRAND TOTAL (₹):', 142, finalY + 13);
+  pdf.text(subTotal.toFixed(2), 198, finalY + 13, {align: 'right'});
+
+  // 6. Warranty Terms (New Feature)
+  const warrantyText = [
+      "WARRANTY CONDITIONS (READ CAREFULLY):",
+      "1. LCD/Display Replacements: 30 days warranty. Warranty applies ONLY to technical malfunction (no display/touch issue).",
+      "2. Warranty VOID if: Physical damage, screen crack, liquid damage (water), pressure spots, dark spots, or if the screen seal/sticker is removed.",
+      "3. All other spare parts (Battery, Speakers, etc.) are covered for 7 days unless specified otherwise.",
+      "4. Data Loss: We are NOT responsible for any data loss during the repair process.",
+      "5. I have checked the device before delivery and accept the repair conditions.",
+  ];
+
+  let currentY = finalY + 25;
+  pdf.setFontSize(8);
+  pdf.setFont(pdf.getFontList().Helvetica, 'bold');
+  pdf.text(warrantyText[0], 10, currentY);
+  currentY += 4;
+  pdf.setFont(pdf.getFontList().Helvetica, 'normal');
+  warrantyText.slice(1).forEach(line => {
+      pdf.text(line, 10, currentY);
+      currentY += 4;
+  });
+  
+  // 7. Signature & Footer
+  pdf.setLineWidth(0.2);
+  pdf.line(150, currentY + 10, 200, currentY + 10);
+  pdf.setFontSize(9);
+  pdf.setFont(pdf.getFontList().Helvetica, 'bold');
+  pdf.text('Authorised Signature', 175, currentY + 14, {align: 'center'});
+
+  pdf.text("Customer Signature", 30, currentY + 14, {align: 'center'});
+  pdf.line(10, currentY + 10, 60, currentY + 10);
+  
+  pdf.save(`Bill_${id}_${data.customerName.replace(/\s/g, '')}.pdf`);
+}
+
+// --- PDF Generator for Unlocking Legal Declaration ---
+function generateLegalPdf() {
+    const form = document.getElementById("legalDeclarationForm");
+    const brandModel = form.ulBrandModel.value.trim();
+    const imei = form.ulImei.value.trim();
+    const fullName = form.ulFullName.value.trim();
+    const address = form.ulAddress.value.trim();
+    const phoneNumber = form.ulPhoneNumber.value.trim();
+    const idTypeNumber = form.ulIdTypeNumber.value.trim();
+    const dateInput = form.ulDate.value.split('-');
+    const date = `${dateInput[2]}/${dateInput[1]}/${dateInput[0].substring(0,2)}${dateInput[0].substring(2)}`;
+    
+    let unlockTypes = [];
+    if (form.ulPin.checked) unlockTypes.push("Pattern/PIN Unlock");
+    if (form.ulFrp.checked) unlockTypes.push("FRP (Google Account) Unlock");
+    if (form.ulNetwork.checked) unlockTypes.push("Network Unlock");
+    if (form.ulOthers.checked) unlockTypes.push("Others");
+
+    if (unlockTypes.length === 0) {
+        alert("Please select at least one unlocking type.");
+        return;
+    }
+    
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({format:"a4"});
+    const pageWidth = pdf.internal.pageSize.getWidth();
+
+    // Set font style for the main text
+    pdf.setFontSize(11);
+    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
+    
+    // Header
+    pdf.setFontSize(14);
+    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
+    pdf.text("Declaration for Mobile Unlocking Service", 15, 15);
+
+    // Shop Details
+    pdf.setFontSize(11);
+    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
+    pdf.text(`Shop Name: ${shopData.shopName || 'N/A'}`, 15, 25);
+    pdf.text(`Shop Address: ${shopData.address || 'N/A'}`, 15, 30);
+    pdf.text(`Contact Number: ${shopData.mobileNo || 'N/A'}`, 15, 35);
+    
+    // Main Declaration Text (I, the undersigned...)
+    const declarationPart1 = `I, the undersigned, hereby declare that I am the lawful owner/user of the mobile phone submitted for unlocking.`;
+    pdf.text(declarationPart1, 15, 50);
+
+    // Device Details
+    pdf.setFontSize(11);
+    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
+    pdf.text("The details of the phone are as follows:", 15, 60);
+
+    let y = 70;
+    pdf.text(`Brand & Model: ${brandModel}`, 25, y); y += 10;
+    pdf.text(`IMEI Number: ${imei}`, 25, y); y += 10;
+    
+    pdf.text("Type of Unlocking Required:", 25, y); y += 5;
+    unlockTypes.forEach(type => {
+        pdf.text(`[✓] ${type}`, 30, y); y += 5;
+    });
+    
+    // Legal Conditions
+    y += 10;
+    pdf.setFontSize(10);
+    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
+    pdf.text("I understand and agree that:", 15, y); y += 5;
+    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
+
+    const legalTerms = [
+        "1. This unlocking is being done at my own request and risk.",
+        "2. The Mobile Solution and its technician(s) are not responsible for any data loss, damage, or legal issues.",
+        "3. I confirm that the device is not stolen or involved in any criminal or unlawful activity.",
+        "4. I am submitting a valid ID proof for record and verification purposes."
+    ];
+    legalTerms.forEach(term => {
+        pdf.text(term, 20, y); y += 5;
+    });
+
+    // Customer Details
+    y += 10;
+    pdf.setFontSize(11);
+    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
+    pdf.text("Customer Details:", 15, y); y += 5;
+    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
+    
+    pdf.text(`Full Name: ${fullName}`, 25, y); y += 10;
+    pdf.text(`Address: ${address}`, 25, y); y += 10;
+    pdf.text(`Phone Number: ${phoneNumber}`, 25, y); y += 10;
+    pdf.text(`ID Type & Number: ${idTypeNumber}`, 25, y); y += 10;
+    
+    // Date and Signature
+    y += 10;
+    pdf.text(`Date: ${date}`, 15, y);
+    pdf.text("Customer Signature:", 130, y); y += 5;
+    
+    pdf.line(130, y, 190, y); // Signature line
+    
+    pdf.text("Powered by RepariFy Web", pageWidth/2, 280, {align: "center", fontSize: 8, fontStyle: "italic"});
+
+    pdf.save(`UnlockingDeclaration_${fullName.replace(/\s/g, '')}.pdf`);
+    alert("Legal Declaration PDF generated. Please print and obtain customer signature.");
 }
 
 
-// --- Edit Modal Logic (Simplified & Corrected) ---
+// --- Utility: Number to Words ---
+function numToWords(n) {
+    // A simplified English number-to-words function placeholder
+    const a = ['', 'one ', 'two ', 'three ', 'four ', 'five ', 'six ', 'seven ', 'eight ', 'nine ', 'ten ', 'eleven ', 'twelve ', 'thirteen ', 'fourteen ', 'fifteen ', 'sixteen ', 'seventeen ', 'eighteen ', 'nineteen '];
+    const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    const g = ['', 'thousand', 'lakh', 'crore', 'arab'];
+    const s = (num) => {
+        let n = ('000' + num).substr(-3).split('');
+        const h = parseInt(n[0]);
+        const t = parseInt(n[1]);
+        const u = parseInt(n[2]);
+        let str = '';
+        if (h > 0) str += a[h] + 'hundred ';
+        if (t > 1) {
+            str += b[t] + ' ';
+            if (u > 0) str += a[u] + ' ';
+        } else if (t == 1) {
+            str += a[t * 10 + u] + ' ';
+        } else if (u > 0) {
+            str += a[u] + ' ';
+        }
+        return str;
+    };
+
+    if (typeof n !== 'number') return '';
+    let x = n.toFixed(2).split('.');
+    let num = parseInt(x[0]);
+    let decimal = x.length > 1 ? parseInt(x[1]) : 0;
+    let out = '';
+    
+    let parts = [];
+    parts.push(num % 1000); // hundreds
+    num = Math.floor(num / 1000);
+    parts.push(num % 100); // thousands
+    num = Math.floor(num / 100);
+    parts.push(num % 100); // lakhs
+    num = Math.floor(num / 100);
+    parts.push(num % 100); // crores
+    num = Math.floor(num / 100);
+    parts.push(num % 100); // arabs
+
+    for (let i = 0; i < parts.length; i++) {
+        if (parts[i] !== 0) {
+            out = s(parts[i]) + g[i] + ' ' + out;
+        }
+    }
+
+    if (decimal > 0) {
+        out += 'and ' + decimal.toString().padStart(2, '0') + '/100 ';
+    }
+    
+    return out.trim().toUpperCase();
+}
+
+
+// --- Edit Modal Logic ---
 window.openEditModal = async function (jobId) {
     const modalEl = document.getElementById("editJobModal");
     const modal = new bootstrap.Modal(modalEl);
@@ -682,18 +1015,14 @@ window.openEditModal = async function (jobId) {
     }
     const job = docSnap.data();
     
-    // Populate form fields
     document.getElementById("editJobId").value = jobId;
-    document.getElementById("editCustomerName").value = job.customerName || "";
-    document.getElementById("editCustomerMobile").value = job.customerMobile || "";
-    document.getElementById("editDeviceType").value = job.deviceType || "mobile";
+    document.getElementById("editDeviceType").value = job.deviceType.charAt(0).toUpperCase() + job.deviceType.slice(1);
     document.getElementById("editDeviceName").value = job.deviceName || "";
-    document.getElementById("editImeiNumber").value = job.imeiNumber || "";
     document.getElementById("editIssueDescription").value = job.issueDescription || "";
     document.getElementById("editCurrentStatus").value = job.currentStatus || "Received";
-    document.getElementById("editEstimatedCost").value = job.estimatedCost || 0;
+    // New: Populate Service Charge
+    document.getElementById("editServiceCharge").value = job.serviceCharge || 0; 
 
-    // Setup Parts Manager with current job ID and data
     setupManagePartsModal(jobId, job.parts || []);
     
     modal.show();
@@ -704,15 +1033,11 @@ document.getElementById("editJobForm").addEventListener("submit", async e => {
   const jobId = document.getElementById("editJobId").value;
   try {
     await updateDoc(doc(db, "jobs", jobId), {
-      customerName: document.getElementById("editCustomerName").value.trim(),
-      customerMobile: document.getElementById("editCustomerMobile").value.trim(),
-      deviceType: document.getElementById("editDeviceType").value,
+      // We only update repair/cost specific fields from the modal
       deviceName: document.getElementById("editDeviceName").value.trim(),
-      // Ensure IMEI is stored only if available
-      imeiNumber: document.getElementById("editImeiNumber").value.trim().toUpperCase(), 
       issueDescription: document.getElementById("editIssueDescription").value.trim(),
       currentStatus: document.getElementById("editCurrentStatus").value,
-      estimatedCost: parseFloat(document.getElementById("editEstimatedCost").value) || 0,
+      serviceCharge: parseFloat(document.getElementById("editServiceCharge").value) || 0,
     });
     alert("Job updated!");
     bootstrap.Modal.getInstance(document.getElementById("editJobModal")).hide();
@@ -722,29 +1047,26 @@ document.getElementById("editJobForm").addEventListener("submit", async e => {
   }
 });
 
-// --- Parts management modal (simplified & corrected) ---
+// --- Parts management modal ---
 function setupManagePartsModal(jobId, parts = []) {
   const partsContainer = document.getElementById("partsContainer");
-  partsContainer.innerHTML = `<h6>Parts Used (${parts.length})</h6>`;
+  partsContainer.innerHTML = ''; // Clear previous content
 
-  parts.forEach((part) => {
-    const partRow = document.createElement("div");
-    partRow.classList.add("row", "mb-2");
-    partRow.innerHTML = `
-      <div class="col-5">
-        <input type="text" class="form-control form-control-sm" value="${part.partName}" readonly />
-      </div>
-      <div class="col-3">
-        <input type="number" class="form-control form-control-sm" value="${part.quantity}" readonly />
-      </div>
-      <div class="col-4">
-        <input type="number" class="form-control form-control-sm" value="${part.price}" readonly />
-      </div>
-    `;
-    partsContainer.appendChild(partRow);
-  });
+  if (parts.length === 0) {
+    partsContainer.innerHTML = `<p class="text-muted mb-0">No parts added yet.</p>`;
+  } else {
+    parts.forEach((part) => {
+      const partRow = document.createElement("div");
+      partRow.classList.add("row", "mb-2");
+      partRow.innerHTML = `
+        <div class="col-6"><input type="text" class="form-control form-control-sm" value="${part.partName}" readonly /></div>
+        <div class="col-3"><input type="number" class="form-control form-control-sm" value="${part.quantity}" readonly /></div>
+        <div class="col-3"><input type="number" class="form-control form-control-sm" value="${part.price}" readonly /></div>
+      `;
+      partsContainer.appendChild(partRow);
+    });
+  }
   
-  // Set the job ID for the 'Manage Parts' button
   document.getElementById("managePartsBtn").dataset.jobId = jobId; 
 }
 
@@ -753,11 +1075,11 @@ document.getElementById("managePartsBtn").addEventListener("click", (e) => {
   const partName = prompt("Enter part name:");
   if (!partName) return;
 
-  const quantityStr = prompt("Enter quantity:");
+  const quantityStr = prompt("Enter quantity (pieces):");
   const quantity = parseInt(quantityStr, 10);
   if (isNaN(quantity) || quantity <= 0) return alert("Quantity must be a positive number.");
 
-  const priceStr = prompt("Enter price (₹):");
+  const priceStr = prompt("Enter Unit Price (₹):");
   const price = parseFloat(priceStr);
   if (isNaN(price) || price < 0) return alert("Price must be a non-negative number.");
 
@@ -768,7 +1090,6 @@ document.getElementById("managePartsBtn").addEventListener("click", (e) => {
       updateDoc(doc(db, "jobs", jobId), { parts })
         .then(() => {
           alert("Part added successfully.");
-          // Re-setup modal to show new parts
           setupManagePartsModal(jobId, parts); 
         })
         .catch(err => alert("Failed to add part: " + err.message));
