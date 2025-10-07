@@ -26,28 +26,24 @@
     .btn-actions > button {
       margin-right: 4px;
     }
-    .signature-box {
-      margin-top: 30px;
-      border-top: 1px solid #000;
-      width: 150px;
-      text-align: center;
-      margin-left: auto;
-      margin-right: auto;
-      padding-top: 5px;
-      font-weight: 600;
+    .service-card {
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
-    .powered-by {
-      font-size: 8px;
-      color: #666;
-      text-align: center;
-      margin-top: 50px;
+    .service-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .service-card.selected {
+        border: 3px solid #007bff !important;
+        background-color: #e7f0ff;
     }
   </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container-fluid d-flex justify-content-between">
-    <a class="navbar-brand" href="index.html">RepariFy Dashboard</a>
+    <a class="navbar-brand" href="#">RepariFy Dashboard</a>
     <button id="logoutBtn" class="btn btn-outline-light btn-sm">Logout</button>
   </div>
 </nav>
@@ -66,7 +62,6 @@
   </ul>
 
   <div class="tab-content mt-3">
-    <!-- Mobile Repair -->
     <div class="tab-pane fade show active" id="mobile" role="tabpanel" aria-labelledby="mobile-tab">
       <h4>New Mobile Repair Job</h4>
       <form id="mobileJobForm">
@@ -80,7 +75,7 @@
           <input type="text" id="mDeviceModel" class="form-control" placeholder="Device Model (e.g. Samsung A50)" required />
         </div>
         <div class="mb-3">
-          <input type="text" id="mImei" class="form-control" placeholder="IMEI Number (15 digits)" required pattern="\\d{15}" maxlength="15" />
+          <input type="text" id="mImei" class="form-control" placeholder="IMEI Number (15 digits)" pattern="\\d{15}" maxlength="15" />
         </div>
         <div class="mb-3">
           <textarea id="mIssueDesc" class="form-control" placeholder="Issue Description" rows="3" required></textarea>
@@ -89,7 +84,6 @@
       </form>
     </div>
 
-    <!-- Computer Repair -->
     <div class="tab-pane fade" id="computer" role="tabpanel" aria-labelledby="computer-tab">
       <h4>New Computer Repair Job</h4>
       <form id="computerJobForm">
@@ -102,13 +96,12 @@
         <div class="mb-3">
           <select id="cDeviceBrand" class="form-select" required>
             <option value="" disabled selected>Select Brand</option>
-            <option>Dell</option>
-            <option>HP</option>
-            <option>Lenovo</option>
-            <option>Acer</option>
-            <option>Asus</option>
-            <option>Apple</option>
-            <!-- Add more brands as needed -->
+            <option value="Dell">Dell</option>
+            <option value="HP">HP</option>
+            <option value="Lenovo">Lenovo</option>
+            <option value="Acer">Acer</option>
+            <option value="Asus">Asus</option>
+            <option value="Apple">Apple</option>
           </select>
         </div>
         <div class="mb-3">
@@ -121,83 +114,55 @@
       </form>
     </div>
 
-    <!-- Unlocking Service -->
     <div class="tab-pane fade" id="unlocking" role="tabpanel" aria-labelledby="unlocking-tab">
-      <h4>Mobile Unlocking Service Declaration</h4>
-      <form id="unlockingForm">
-        <div class="mb-2">
-          <label>Shop Name: <span id="unlockShopName" class="fw-bold"></span></label>
-        </div>
-        <div class="mb-3">
-          <label>Shop Address: <span id="unlockShopAddress"></span></label>
-        </div>
-        <div class="mb-3">
-          <label>Contact Number: <span id="unlockShopContact"></span></label>
-        </div>
-        <div class="mb-3">
-          <label>Brand & Model:</label>
-          <input type="text" id="uBrandModel" class="form-control" required />
-        </div>
-        <div class="mb-3">
-          <label>IMEI Number:</label>
-          <input type="text" id="uImei" class="form-control" required pattern="\\d{15}" maxlength="15" />
-        </div>
+      <h4 class="mb-4">Order Online Unlocking Service</h4>
+      
+      <div class="alert alert-info" role="alert">
+          **Your Shop:** <span id="unlockShopName" class="fw-bold">...</span> | **Contact:** <span id="unlockShopContact">...</span>
+      </div>
 
-        <label>Type of Unlocking Required:</label>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="unlockPin" />
-          <label class="form-check-label" for="unlockPin">Pattern/PIN Unlock</label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="unlockFrp" />
-          <label class="form-check-label" for="unlockFrp">FRP (Google Account) Unlock</label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="unlockNetwork" />
-          <label class="form-check-label" for="unlockNetwork">Network Unlock</label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" id="unlockOthers" />
-          <label class="form-check-label" for="unlockOthers">Others</label>
-        </div>
+      <div class="row">
+          <div class="col-md-5">
+              <h5>1. Select Service (Rates set by Admin)</h5>
+              <div id="unlocking-services-list" class="row g-3 mb-4">
+                  <p class="text-muted">Loading available services...</p>
+              </div>
+          </div>
+          <div class="col-md-7 border-start">
+              <h5>2. Fill Device Details & Order</h5>
+              <form id="unlockingOrderForm">
+                  <input type="hidden" id="serviceId" required />
+                  <input type="hidden" id="servicePrice" required />
 
-        <div class="mb-3 mt-3">
-          <label>Full Name:</label>
-          <input type="text" id="uFullName" class="form-control" required />
-        </div>
-        <div class="mb-3">
-          <label>Address:</label>
-          <textarea id="uAddress" class="form-control" rows="3" required></textarea>
-        </div>
-        <div class="mb-3">
-          <label>Phone Number:</label>
-          <input type="tel" id="uPhoneNumber" class="form-control" required />
-        </div>
-        <div class="mb-3">
-          <label>ID Type & Number:</label>
-          <input type="text" id="uIdTypeNumber" class="form-control" required />
-        </div>
-        <div class="mb-3">
-          <label>Date:</label>
-          <input type="date" id="uDate" class="form-control" required />
-        </div>
-        <hr />
-        <div class="mb-4">
-          <h6>Declaration:</h6>
-          <p style="font-size: 0.9rem;">
-            I, the undersigned, hereby declare that I am the lawful owner/user of the mobile phone submitted for unlocking.<br />
-            1. This unlocking is being done at my own request and risk.<br />
-            2. The Mobile Solution and its technician(s) are not responsible for any data loss, damage, or legal issues.<br />
-            3. I confirm that the device is not stolen or involved in any criminal or unlawful activity.<br />
-            4. I am submitting a valid ID proof for record and verification purposes.
-          </p>
-        </div>
-        <div class="mb-3">
-          <label>Customer Signature (Enter Name):</label>
-          <input type="text" id="uCustomerSignature" class="form-control" required />
-        </div>
-        <button type="submit" class="btn btn-danger w-100">Create Unlocking Job Card & Generate PDF</button>
-      </form>
+                  <div class="mb-3">
+                      <label class="form-label">Customer Name</label>
+                      <input type="text" id="uCustomerName" class="form-control" required />
+                  </div>
+                  <div class="mb-3">
+                      <label class="form-label">Customer Mobile (WhatsApp)</label>
+                      <input type="tel" id="uCustomerMobile" class="form-control" required />
+                  </div>
+                  <div class="mb-3">
+                      <label class="form-label">Brand & Model</label>
+                      <input type="text" id="uBrandModel" class="form-control" required />
+                  </div>
+                  <div class="mb-3">
+                      <label class="form-label">IMEI Number</label>
+                      <input type="text" id="uImei" class="form-control" pattern="\\d{15}" maxlength="15" required />
+                  </div>
+                  <div class="mb-3">
+                      <label class="form-label">Selected Service:</label>
+                      <p class="fw-bold text-primary" id="selectedServiceName">None Selected</p>
+                      <p class="fw-bold text-success">Price: ₹<span id="displayServicePrice">0</span></p>
+                  </div>
+                  
+                  <button type="submit" class="btn btn-success w-100" id="orderUnlockBtn" disabled>
+                      Place Order & Pay Technician
+                  </button>
+                  <p class="text-danger mt-2" id="orderErrorMsg"></p>
+              </form>
+          </div>
+      </div>
     </div>
   </div>
 
@@ -222,9 +187,28 @@
       </tbody>
     </table>
   </div>
+
+  <h4 class="mt-4">Recent Unlocking Orders</h4>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover" id="unlockOrdersTable">
+      <thead>
+        <tr class="bg-info text-white">
+          <th>Order ID</th>
+          <th>Service Name</th>
+          <th>Device Model</th>
+          <th>Customer Price (₹)</th>
+          <th>Tech Name</th>
+          <th>Status</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="unlock-orders-table-body">
+        <tr><td colspan="7" class="text-center text-muted">No recent unlocking orders found.</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
-<!-- Edit Modal -->
 <div class="modal fade" id="editJobModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <form class="modal-content" id="editJobForm">
@@ -310,7 +294,8 @@ import {
   where,
   limit,
   updateDoc,
-  serverTimestamp
+  serverTimestamp,
+  getDocs
 } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -329,6 +314,7 @@ const db = getFirestore();
 
 let currentUserId = null;
 let shopData = null;
+let activeTechnicians = []; 
 
 onAuthStateChanged(auth, user => {
   if (user) {
@@ -339,8 +325,10 @@ onAuthStateChanged(auth, user => {
           shopData = docSnap.data();
           document.title = `Dashboard - ${shopData.shopName}`;
           listenForJobs();
+          listenForUnlockRates();
+          listenForUnlockOrders();
+          listenForTechnicians();
           fillUnlockingShopDetails();
-          setupManagePartsModal();
         } else {
           alert("Access denied, not approved or revoked.");
           signOut(auth);
@@ -363,49 +351,73 @@ document.getElementById("logoutBtn").addEventListener("click", () =>
   })
 );
 
-// Mobile Job Form Submit
+// --- Shop Data Display ---
+function fillUnlockingShopDetails() {
+    if (shopData) {
+        document.getElementById("unlockShopName").textContent = shopData.shopName || "N/A";
+        document.getElementById("unlockShopContact").textContent = shopData.mobileNo || "N/A";
+    }
+}
+
+// --- Technician Listener (for assigning orders) ---
+function listenForTechnicians() {
+    const q = query(collection(db, "technicians"), where("status", "==", "Active"));
+    onSnapshot(q, (snapshot) => {
+        activeTechnicians = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (activeTechnicians.length === 0) {
+            document.getElementById("orderErrorMsg").textContent = "No technicians are currently active to take orders.";
+            document.getElementById("orderUnlockBtn").disabled = true;
+        } else {
+            document.getElementById("orderErrorMsg").textContent = "";
+        }
+    });
+}
+
+// --- Order Assignment Logic (Simple Round-Robin Placeholder) ---
+let lastAssignedTechIndex = -1;
+function getNextTechnicianId() {
+    if (activeTechnicians.length === 0) return null;
+    lastAssignedTechIndex = (lastAssignedTechIndex + 1) % activeTechnicians.length;
+    return activeTechnicians[lastAssignedTechIndex].id;
+}
+
+
+// --- Form Submissions ---
 document.getElementById("mobileJobForm").addEventListener("submit", e => {
   e.preventDefault();
   createJob("mobile");
 });
 
-// Computer Job Form Submit
 document.getElementById("computerJobForm").addEventListener("submit", e => {
   e.preventDefault();
   createJob("computer");
 });
 
-// Unlocking Form Submit
-document.getElementById("unlockingForm").addEventListener("submit", e => {
+document.getElementById("unlockingOrderForm").addEventListener("submit", e => {
   e.preventDefault();
-  createUnlockingJob();
+  createUnlockOrder();
 });
 
-// --- Create job function ---
+// --- Create local job function ---
 async function createJob(type) {
-  if (!currentUserId) {
-    alert("User not logged in, please refresh.");
+  if (!currentUserId || !shopData) {
+    alert("User data missing, please refresh.");
     return;
   }
   const formId = type === "mobile" ? "mobileJobForm" : "computerJobForm";
   const form = document.getElementById(formId);
-  let estimatedCost = 0;
-
-  if (type === "mobile") {
-    estimatedCost = parseFloat(form.querySelector("#estimatedCost")?.value) || 0;
-  } else {
-    estimatedCost = parseFloat(form.querySelector("#cEstimateInput")?.value) || 0;
-  }
+  const isMobile = type === "mobile";
 
   const newJob = {
-    customerName: form.querySelector("input[id$='CustomerName']").value.trim(),
-    customerMobile: form.querySelector("input[id$='CustomerMobile']").value.trim(),
+    customerName: form.querySelector(`input[id$='CustomerName']`).value.trim(),
+    customerMobile: form.querySelector(`input[id$='CustomerMobile']`).value.trim(),
     deviceType: type,
-    deviceName: form.querySelector(type === "mobile" ? "#mDeviceModel" : "#cDeviceModel").value.trim(),
-    imeiNumber: type === "mobile" ? form.querySelector("#mImei").value.trim().toUpperCase() : "",
+    deviceName: form.querySelector(isMobile ? "#mDeviceModel" : "#cDeviceModel").value.trim(),
+    // Fix: Computer job will have an empty IMEI string, preventing pattern error
+    imeiNumber: isMobile ? form.querySelector("#mImei").value.trim().toUpperCase() : "", 
     issueDescription: form.querySelector("textarea").value.trim(),
     currentStatus: "Received",
-    estimatedCost: estimatedCost,
+    estimatedCost: 0, 
     receivedOn: serverTimestamp(),
     shopId: currentUserId,
     shopName: shopData.shopName || "",
@@ -414,9 +426,9 @@ async function createJob(type) {
   };
 
   try {
-    await addDoc(collection(db, "jobs"), newJob);
+    const docRef = await addDoc(collection(db, "jobs"), newJob);
     alert("Job card created successfully!");
-    jobPrintConfirm(newJob);
+    jobPrintConfirm(newJob, docRef.id);
     form.reset();
   } catch (err) {
     alert("Failed to create job card! Please try again.");
@@ -424,78 +436,109 @@ async function createJob(type) {
   }
 }
 
-// --- Unlocking job creation ---
-async function createUnlockingJob() {
-  if (!currentUserId) {
-    alert("User not logged in, please refresh.");
-    return;
-  }
-  const brandModel = document.getElementById("uBrandModel").value.trim();
-  const imei = document.getElementById("uImei").value.trim();
-  const fullName = document.getElementById("uFullName").value.trim();
-  const address = document.getElementById("uAddress").value.trim();
-  const phoneNumber = document.getElementById("uPhoneNumber").value.trim();
-  const idTypeNumber = document.getElementById("uIdTypeNumber").value.trim();
-  const date = document.getElementById("uDate").value.trim();
-  const signature = document.getElementById("uCustomerSignature").value.trim();
+// --- Online Unlocking Order Creation ---
+async function createUnlockOrder() {
+    if (!currentUserId || activeTechnicians.length === 0) {
+        alert("Cannot place order: No active technicians.");
+        return;
+    }
 
-  let unlockTypes = [];
-  if (document.getElementById("unlockPin").checked)
-    unlockTypes.push("Pattern/PIN Unlock");
-  if (document.getElementById("unlockFrp").checked)
-    unlockTypes.push("FRP (Google Account) Unlock");
-  if (document.getElementById("unlockNetwork").checked)
-    unlockTypes.push("Network Unlock");
-  if (document.getElementById("unlockOthers").checked)
-    unlockTypes.push("Others");
-  if (unlockTypes.length === 0) {
-    alert("Please select at least one unlocking type.");
-    return;
-  }
+    const form = document.getElementById("unlockingOrderForm");
+    const technicianId = getNextTechnicianId(); 
+    
+    if (!technicianId) {
+        alert("No technician could be assigned.");
+        return;
+    }
 
-  const newJob = {
-    customerName: fullName,
-    customerMobile: phoneNumber,
-    deviceType: "unlocking",
-    deviceName: brandModel,
-    imeiNumber: imei,
-    issueDescription: `Unlocking Type: ${unlockTypes.join(", ")}`,
-    currentStatus: "Received",
-    estimatedCost: 0,
-    receivedOn: serverTimestamp(),
-    shopId: currentUserId,
-    shopName: shopData.shopName || "",
-    unlockDetails: {
-      address,
-      idTypeNumber,
-      date,
-      signature
-    },
-    parts: [],
-    workStartTime: null
-  };
+    const orderData = {
+        customerName: form.uCustomerName.value.trim(),
+        customerMobile: form.uCustomerMobile.value.trim(),
+        deviceName: form.uBrandModel.value.trim(),
+        imeiNumber: form.uImei.value.trim().toUpperCase(),
+        
+        serviceId: form.serviceId.value,
+        serviceName: document.getElementById("selectedServiceName").textContent,
+        servicePrice: parseFloat(form.servicePrice.value), // Price shop pays
+        
+        shopId: currentUserId,
+        shopName: shopData.shopName || "",
+        
+        technicianId: technicianId,
+        status: "Pending", // Status for the technician to pick up
+        orderedAt: serverTimestamp()
+    };
+    
+    try {
+        await addDoc(collection(db, "unlockOrders"), orderData);
+        alert(`Unlocking order placed successfully! Assigned to Tech: ${technicianId.substring(0, 4)}...`);
+        form.reset();
+        document.getElementById("selectedServiceName").textContent = "None Selected";
+        document.getElementById("displayServicePrice").textContent = "0";
+        document.getElementById("orderUnlockBtn").disabled = true;
+        // Deselect card
+        document.querySelectorAll('.service-card').forEach(card => card.classList.remove('selected'));
 
-  try {
-    const docRef = await addDoc(collection(db, "jobs"), newJob);
-    alert("Unlocking job created successfully!");
-    generateUnlockPdf(newJob, docRef.id);
-    document.getElementById("unlockingForm").reset();
-  } catch (err) {
-    alert("Failed to create unlocking job! Please try again.");
-    console.error(err);
-  }
+    } catch (err) {
+        alert("Failed to place unlocking order. Please try again.");
+        console.error(err);
+    }
 }
 
-// --- Recent jobs listener ---
+// --- Live Unlocking Rate Display ---
+function listenForUnlockRates() {
+    const servicesList = document.getElementById("unlocking-services-list");
+    onSnapshot(collection(db, "unlockRates"), (snapshot) => {
+        servicesList.innerHTML = '';
+        if (snapshot.empty) {
+            servicesList.innerHTML = `<p class="text-danger">No unlocking services are currently available. Contact Admin.</p>`;
+            return;
+        }
+
+        snapshot.forEach(doc => {
+            const service = doc.data();
+            const serviceHtml = `
+                <div class="col-md-6">
+                    <div class="card p-3 service-card" data-id="${doc.id}" data-name="${service.serviceName}" data-price="${service.price}">
+                        <h6 class="card-title text-primary">${service.serviceName}</h6>
+                        <p class="card-text mb-0">Price: <span class="fw-bold text-success">₹${service.price.toLocaleString('en-IN')}</span></p>
+                        <p class="card-text text-muted" style="font-size:0.9em;">Duration: ${service.duration || 'N/A'}</p>
+                    </div>
+                </div>
+            `;
+            servicesList.insertAdjacentHTML('beforeend', serviceHtml);
+        });
+
+        // Attach click listener to cards
+        document.querySelectorAll('.service-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                
+                const serviceId = card.dataset.id;
+                const serviceName = card.dataset.name;
+                const servicePrice = card.dataset.price;
+                
+                document.getElementById("serviceId").value = serviceId;
+                document.getElementById("servicePrice").value = servicePrice;
+                document.getElementById("selectedServiceName").textContent = serviceName;
+                document.getElementById("displayServicePrice").textContent = parseFloat(servicePrice).toLocaleString('en-IN');
+                document.getElementById("orderUnlockBtn").disabled = false;
+            });
+        });
+    });
+}
+
+// --- Recent jobs listener (Local Repair) ---
 function listenForJobs() {
-  const q = query(collection(db, "jobs"), where("shopId", "==", currentUserId), limit(20));
+  const q = query(collection(db, "jobs"), where("shopId", "==", currentUserId), limit(15));
   onSnapshot(
     q,
     snapshot => {
       const tbody = document.getElementById("jobs-table-body");
       tbody.innerHTML = "";
       if (snapshot.empty) {
-        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">No recent jobs found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">No recent local jobs found.</td></tr>`;
         return;
       }
       snapshot.forEach(doc => {
@@ -508,11 +551,6 @@ function listenForJobs() {
           Ready: "bg-success",
           Delivered: "bg-secondary"
         }[job.currentStatus] || "bg-info";
-        const partsInfo =
-          job.parts && job.parts.length > 0
-            ? `Parts (${job.parts.length})`
-            : "Add parts";
-        const workStarted = job.workStartTime ? "Started" : "Start Work";
 
         const row = `<tr>
           <td>${displayId}</td>
@@ -524,11 +562,8 @@ function listenForJobs() {
           <td><span class="badge ${statusClass}">${job.currentStatus}</span></td>
           <td>₹${job.estimatedCost || 0}</td>
           <td class="btn-actions">
-            <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${doc.id}')">View/Update</button>
-            <button class="btn btn-sm btn-outline-success" onclick="downloadPdf('${doc.id}')">PDF</button>
-            <button class="btn btn-sm btn-outline-secondary" onclick="printPdf('${doc.id}')">Print</button>
-            <button class="btn btn-sm btn-outline-warning" onclick="startWork('${doc.id}')">${workStarted}</button>
-            <button class="btn btn-sm btn-outline-info" onclick="addParts('${doc.id}')">${partsInfo}</button>
+            <button class="btn btn-sm btn-outline-primary" onclick="window.openEditModal('${doc.id}')">Update</button>
+            <button class="btn btn-sm btn-outline-success" onclick="window.downloadJobPdf('${doc.id}')">PDF</button>
           </td>
         </tr>`;
         tbody.insertAdjacentHTML("beforeend", row);
@@ -542,166 +577,62 @@ function listenForJobs() {
   );
 }
 
-// --- Edit modal logic ---
-window.openEditModal = async function (jobId) {
-  const modalEl = document.getElementById("editJobModal");
-  const modal = new bootstrap.Modal(modalEl);
-  const docSnap = await getDoc(doc(db, "jobs", jobId));
-  if (!docSnap.exists()) {
-    alert("Job not found.");
-    return;
-  }
-  const job = docSnap.data();
-  document.getElementById("editJobId").value = jobId;
-  document.getElementById("editCustomerName").value = job.customerName || "";
-  document.getElementById("editCustomerMobile").value = job.customerMobile || "";
-  document.getElementById("editDeviceType").value = job.deviceType || "";
-  document.getElementById("editDeviceName").value = job.deviceName || "";
-  document.getElementById("editImeiNumber").value = job.imeiNumber || "";
-  document.getElementById("editIssueDescription").value = job.issueDescription || "";
-  document.getElementById("editCurrentStatus").value = job.currentStatus || "Received";
-  document.getElementById("editEstimatedCost").value = job.estimatedCost || 0;
+// --- Recent Unlocking Orders Listener (Online Service) ---
+function listenForUnlockOrders() {
+    const q = query(collection(db, "unlockOrders"), where("shopId", "==", currentUserId), limit(15));
+    onSnapshot(q, (snapshot) => {
+        const tbody = document.getElementById("unlock-orders-table-body");
+        tbody.innerHTML = '';
+        if (snapshot.empty) {
+            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No recent unlocking orders found.</td></tr>`;
+            return;
+        }
 
-  setupManagePartsModal(job.parts || []);
+        snapshot.forEach(doc => {
+            const order = doc.data();
+            const displayId = doc.id.substring(0, 5).toUpperCase();
+            const date = order.orderedAt?.toDate ? order.orderedAt.toDate().toLocaleDateString('en-US') : 'N/A';
+            const techName = order.technicianId ? `Tech ${order.technicianId.substring(0, 4)}...` : 'Unassigned';
+            
+            const statusClass = {
+                Pending: "bg-warning text-dark",
+                InProgress: "bg-info",
+                Completed: "bg-success",
+                Rejected: "bg-danger"
+            }[order.status] || "bg-secondary";
 
-  modal.show();
-};
-
-document.getElementById("editJobForm").addEventListener("submit", async e => {
-  e.preventDefault();
-  const jobId = document.getElementById("editJobId").value;
-  try {
-    await updateDoc(doc(db, "jobs", jobId), {
-      customerName: document.getElementById("editCustomerName").value.trim(),
-      customerMobile: document.getElementById("editCustomerMobile").value.trim(),
-      deviceType: document.getElementById("editDeviceType").value,
-      deviceName: document.getElementById("editDeviceName").value.trim(),
-      imeiNumber: document.getElementById("editImeiNumber").value.trim(),
-      issueDescription: document.getElementById("editIssueDescription").value.trim(),
-      currentStatus: document.getElementById("editCurrentStatus").value,
-      estimatedCost: parseFloat(document.getElementById("editEstimatedCost").value) || 0,
+            const row = `<tr>
+                <td>${displayId}</td>
+                <td>${order.serviceName}</td>
+                <td>${order.deviceName}</td>
+                <td>₹${order.servicePrice.toLocaleString('en-IN')}</td>
+                <td>${techName}</td>
+                <td><span class="badge ${statusClass}">${order.status}</span></td>
+                <td>${date}</td>
+            </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
+        });
     });
-    alert("Job updated!");
-    bootstrap.Modal.getInstance(document.getElementById("editJobModal")).hide();
-  } catch (err) {
-    alert("Update failed: " + err.message);
-  }
-});
-
-// --- Parts management modal (simplified) ---
-function setupManagePartsModal(parts = []) {
-  const partsContainer = document.getElementById("partsContainer");
-  partsContainer.innerHTML = "";
-
-  parts.forEach((part, i) => {
-    const partRow = document.createElement("div");
-    partRow.classList.add("row", "mb-2");
-    partRow.innerHTML = `
-      <div class="col-6">
-        <input type="text" class="form-control" value="${part.partName}" data-index="${i}" readonly />
-      </div>
-      <div class="col-3">
-        <input type="number" class="form-control" value="${part.quantity}" data-index="${i}" readonly />
-      </div>
-      <div class="col-3">
-        <input type="number" class="form-control" value="${part.price}" data-index="${i}" readonly />
-      </div>
-    `;
-    partsContainer.appendChild(partRow);
-  });
 }
 
-document.getElementById("managePartsBtn").addEventListener("click", () => {
-  const jobId = document.getElementById("editJobId").value;
-  const partName = prompt("Enter part name:");
-  if (!partName) return alert("Part name is required.");
 
-  const quantity = parseInt(prompt("Enter quantity:"), 10);
-  if (isNaN(quantity) || quantity <= 0)
-    return alert("Quantity must be a positive number.");
-
-  const price = parseFloat(prompt("Enter price (₹):"));
-  if (isNaN(price) || price < 0) return alert("Price must be a positive number.");
-
-  getDoc(doc(db, "jobs", jobId))
-    .then(docSnap => {
-      const parts = docSnap.data().parts || [];
-      parts.push({ partName, quantity, price });
-      updateDoc(doc(db, "jobs", jobId), { parts })
-        .then(() => {
-          alert("Part added successfully.");
-          setupManagePartsModal(parts);
-        })
-        .catch(err => alert("Failed to add part: " + err.message));
-    })
-    .catch(err => alert("Job not found: " + err.message));
-});
-
-// --- PDF Generation for Unlocking Service ---
-function generateUnlockPdf(data, id) {
-  const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF({format:"a4"});
-  const pageWidth = pdf.internal.pageSize.getWidth();
-
-  pdf.setFontSize(16);
-  pdf.text("Declaration for Mobile Unlocking Service", pageWidth/2, 15, {align:"center"});
-
-  pdf.setFontSize(12);
-  pdf.text(`Shop Name: ${shopData.shopName}`, 15, 30);
-  pdf.text(`Shop Address: ${shopData.address || "N/A"}`, 15, 40);
-  pdf.text(`Contact Number: ${shopData.contactNumber || "N/A"}`, 15, 50);
-
-  pdf.text("Customer Details:", 15, 65);
-  pdf.text(`Full Name: ${data.customerName}`, 25, 75);
-  pdf.text(`Address: ${data.unlockDetails.address}`, 25, 85);
-  pdf.text(`Phone Number: ${data.customerMobile}`, 25, 95);
-  pdf.text(`ID Type & Number: ${data.unlockDetails.idTypeNumber}`, 25, 105);
-  pdf.text(`Date: ${data.unlockDetails.date}`, 25, 115);
-
-  pdf.text("Brand & Model:", 15, 130);
-  pdf.text(data.deviceName, 40, 130);
-  
-  pdf.text("IMEI Number:", 15, 140);
-  pdf.text(data.imeiNumber, 40, 140);
-
-  pdf.text("Type of Unlocking Required:", 15, 150);
-  const unlockTypes = data.issueDescription.replace("Unlocking Type: ","").split(", ");
-  unlockTypes.forEach((ut,i) => {
-    pdf.text(`- ${ut}`, 25, 160 + i*10);
-  });
-
-  pdf.text("Declaration:", 15, 190);
-  const decl = [
-    "1. This unlocking is being done at my own request and risk.",
-    "2. The Mobile Solution and its technician(s) are not responsible for any data loss, damage, or legal issues.",
-    "3. I confirm that the device is not stolen or involved in any criminal or unlawful activity.",
-    "4. I am submitting a valid ID proof for record and verification purposes."
-  ];
-
-  decl.forEach((line,i) => {
-    pdf.text(line, 25, 200 + i*10);
-  });
-
-  pdf.text("Customer Signature:", 15, 240);
-  pdf.text(data.unlockDetails.signature, 70, 240);
-
-  pdf.text("Powered by RepariFy Web", pageWidth/2, 280, {align: "center", fontSize: 8, fontStyle: "italic"});
-
-  pdf.save(`UnlockingJob_${id}.pdf`);
-}
-
-// --- Print Confirmation ---
-function jobPrintConfirm(newJob){
-  if(confirm("Do you want to print the job card?")){
-    if(newJob.deviceType === "unlocking"){
-      generateUnlockPdf(newJob, "NEW");
-    }else{
-      generateJobPdf(newJob, "NEW");
+// --- Job PDF Generation ---
+window.downloadJobPdf = async function (jobId) {
+    const docSnap = await getDoc(doc(db, "jobs", jobId));
+    if (docSnap.exists()) {
+        generateJobPdf(docSnap.data(), docSnap.id.substring(0, 5).toUpperCase());
+    } else {
+        alert("Job data not found.");
     }
+}
+
+function jobPrintConfirm(newJob, id){
+  if(confirm("Do you want to download the job card PDF?")){
+    generateJobPdf(newJob, id.substring(0, 5).toUpperCase());
   }
 }
 
-// --- General Job PDF Generator ---
+// Simplified PDF Generator
 function generateJobPdf(data, id){
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF({format:'a4'});
@@ -723,18 +654,128 @@ function generateJobPdf(data, id){
 
   if(data.parts && data.parts.length > 0){
     pdf.text("Extra Parts:", 15, 120);
+    let totalPartCost = 0;
     data.parts.forEach((part,i) => {
       pdf.text(`- ${part.partName} x${part.quantity} @ ₹${part.price}`, 20, 130 + i*10);
+      totalPartCost += part.quantity * part.price;
     });
+    pdf.text(`Total Part Cost: ₹${totalPartCost}`, 15, 130 + data.parts.length * 10 + 5);
   }
 
-  let datePrinted = new Date().toLocaleDateString();
+  let datePrinted = new Date().toLocaleDateString('en-US');
   pdf.text(`Printed on: ${datePrinted}`, 15, 170);
 
   pdf.text("Powered by RepariFy Web", pageWidth/2, 280, {align: "center", fontSize: 8, fontStyle: "italic"});
 
   pdf.save(`JobCard_${id}.pdf`);
 }
+
+
+// --- Edit Modal Logic (Simplified & Corrected) ---
+window.openEditModal = async function (jobId) {
+    const modalEl = document.getElementById("editJobModal");
+    const modal = new bootstrap.Modal(modalEl);
+    const docSnap = await getDoc(doc(db, "jobs", jobId));
+    if (!docSnap.exists()) {
+        alert("Job not found.");
+        return;
+    }
+    const job = docSnap.data();
+    
+    // Populate form fields
+    document.getElementById("editJobId").value = jobId;
+    document.getElementById("editCustomerName").value = job.customerName || "";
+    document.getElementById("editCustomerMobile").value = job.customerMobile || "";
+    document.getElementById("editDeviceType").value = job.deviceType || "mobile";
+    document.getElementById("editDeviceName").value = job.deviceName || "";
+    document.getElementById("editImeiNumber").value = job.imeiNumber || "";
+    document.getElementById("editIssueDescription").value = job.issueDescription || "";
+    document.getElementById("editCurrentStatus").value = job.currentStatus || "Received";
+    document.getElementById("editEstimatedCost").value = job.estimatedCost || 0;
+
+    // Setup Parts Manager with current job ID and data
+    setupManagePartsModal(jobId, job.parts || []);
+    
+    modal.show();
+};
+
+document.getElementById("editJobForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const jobId = document.getElementById("editJobId").value;
+  try {
+    await updateDoc(doc(db, "jobs", jobId), {
+      customerName: document.getElementById("editCustomerName").value.trim(),
+      customerMobile: document.getElementById("editCustomerMobile").value.trim(),
+      deviceType: document.getElementById("editDeviceType").value,
+      deviceName: document.getElementById("editDeviceName").value.trim(),
+      // Ensure IMEI is stored only if available
+      imeiNumber: document.getElementById("editImeiNumber").value.trim().toUpperCase(), 
+      issueDescription: document.getElementById("editIssueDescription").value.trim(),
+      currentStatus: document.getElementById("editCurrentStatus").value,
+      estimatedCost: parseFloat(document.getElementById("editEstimatedCost").value) || 0,
+    });
+    alert("Job updated!");
+    bootstrap.Modal.getInstance(document.getElementById("editJobModal")).hide();
+  } catch (err) {
+    alert("Update failed: " + err.message);
+    console.error(err);
+  }
+});
+
+// --- Parts management modal (simplified & corrected) ---
+function setupManagePartsModal(jobId, parts = []) {
+  const partsContainer = document.getElementById("partsContainer");
+  partsContainer.innerHTML = `<h6>Parts Used (${parts.length})</h6>`;
+
+  parts.forEach((part) => {
+    const partRow = document.createElement("div");
+    partRow.classList.add("row", "mb-2");
+    partRow.innerHTML = `
+      <div class="col-5">
+        <input type="text" class="form-control form-control-sm" value="${part.partName}" readonly />
+      </div>
+      <div class="col-3">
+        <input type="number" class="form-control form-control-sm" value="${part.quantity}" readonly />
+      </div>
+      <div class="col-4">
+        <input type="number" class="form-control form-control-sm" value="${part.price}" readonly />
+      </div>
+    `;
+    partsContainer.appendChild(partRow);
+  });
+  
+  // Set the job ID for the 'Manage Parts' button
+  document.getElementById("managePartsBtn").dataset.jobId = jobId; 
+}
+
+document.getElementById("managePartsBtn").addEventListener("click", (e) => {
+  const jobId = e.target.dataset.jobId;
+  const partName = prompt("Enter part name:");
+  if (!partName) return;
+
+  const quantityStr = prompt("Enter quantity:");
+  const quantity = parseInt(quantityStr, 10);
+  if (isNaN(quantity) || quantity <= 0) return alert("Quantity must be a positive number.");
+
+  const priceStr = prompt("Enter price (₹):");
+  const price = parseFloat(priceStr);
+  if (isNaN(price) || price < 0) return alert("Price must be a non-negative number.");
+
+  getDoc(doc(db, "jobs", jobId))
+    .then(docSnap => {
+      const parts = docSnap.data().parts || [];
+      parts.push({ partName, quantity, price });
+      updateDoc(doc(db, "jobs", jobId), { parts })
+        .then(() => {
+          alert("Part added successfully.");
+          // Re-setup modal to show new parts
+          setupManagePartsModal(jobId, parts); 
+        })
+        .catch(err => alert("Failed to add part: " + err.message));
+    })
+    .catch(err => alert("Job not found: " + err.message));
+});
+
 </script>
 
 </body>
