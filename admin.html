@@ -7,12 +7,13 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
 <style>
   body { font-family: 'Poppins', sans-serif; background: #f8f9fa; padding-top: 80px; }
-  .container { max-width: 1300px; }
+  .container { max-width: 1400px; }
   h2 { font-weight: 700; color: #007bff; margin-bottom: 20px; }
   .table-responsive { max-height: 550px; overflow-y: auto; margin-bottom: 30px; }
   .btn-primary, .btn-success, .btn-danger { min-width: 100px; }
   .filter-group, .export-group, .plan-pricing-group { margin-bottom: 20px; }
   .search-box input { max-width: 300px; }
+  .card-summary { height: 100%; }
 </style>
 </head>
 <body>
@@ -24,82 +25,198 @@
   </div>
 </nav>
 
-<div class="container">
-  <h2>Manage Shop Registrations & Plans</h2>
+<div class="container mt-4">
+  
+  <ul class="nav nav-tabs" id="adminTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="shops-tab" data-bs-toggle="tab" data-bs-target="#shops" type="button" role="tab" aria-controls="shops" aria-selected="true">Shop Management</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="sales-tab" data-bs-toggle="tab" data-bs-target="#sales" type="button" role="tab" aria-controls="sales" aria-selected="false">Sales & Revenue</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="remote-tab" data-bs-toggle="tab" data-bs-target="#remote" type="button" role="tab" aria-controls="remote" aria-selected="false">Remote Access</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="unlocking-tab" data-bs-toggle="tab" data-bs-target="#unlocking" type="button" role="tab" aria-controls="unlocking" aria-selected="false">Online Unlocking</button>
+    </li>
+  </ul>
 
-  <div class="row">
-    <div class="col-md-6 filter-group d-flex align-items-center gap-3">
-      <input class="form-control search-box" type="search" placeholder="Search by Mobile Number or Shop Name" id="searchInput" />
-      <select id="filterSelect" class="form-select" style="max-width: 220px;">
-        <option value="all">All Shops</option>
-        <option value="approved">Approved</option>
-        <option value="notapproved">Not Approved</option>
-        <option value="trial">Trial Plan</option>
-        <option value="subscription">Subscribed</option>
-      </select>
-      <button id="clearFilterBtn" class="btn btn-secondary btn-sm">Clear Search & Filter</button>
+  <div class="tab-content mt-3">
+    
+    <div class="tab-pane fade show active" id="shops" role="tabpanel" aria-labelledby="shops-tab">
+      <h2>Manage Shop Registrations & Plans</h2>
+
+      <div class="row">
+        <div class="col-md-7 filter-group d-flex align-items-center gap-3">
+          <input class="form-control search-box" type="search" placeholder="Search by Mobile Number or Shop Name" id="searchInput" />
+          <select id="filterSelect" class="form-select" style="max-width: 220px;">
+            <option value="all">All Shops</option>
+            <option value="approved">Approved</option>
+            <option value="notapproved">Not Approved</option>
+            <option value="trial">Trial Plan</option>
+            <option value="subscription">Subscribed</option>
+          </select>
+          <button id="clearFilterBtn" class="btn btn-secondary btn-sm">Clear</button>
+        </div>
+
+        <div class="col-md-5 export-group d-flex justify-content-end gap-2">
+          <button id="exportCsvBtn" class="btn btn-success btn-sm">Export CSV</button>
+          <button id="exportPdfBtn" class="btn btn-danger btn-sm">Export PDF</button>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-striped table-bordered align-middle text-center" id="shopsTable">
+          <thead class="table-dark">
+            <tr>
+              <th>Shop ID</th>
+              <th>Shop Name</th>
+              <th>Email</th>
+              <th>Mobile</th>
+              <th>Plan</th>
+              <th>Price (₹)</th>
+              <th>Subscription Ends</th>
+              <th>Approval Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="shopListBody">
+            <tr><td colspan="9" class="text-center text-muted">Loading shops...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="plan-pricing-group">
+        <h4>Manage Product Prices</h4>
+        <div class="row g-3 align-items-center">
+          <div class="col-auto">
+            <label class="form-label">6 Months Price:</label>
+            <input type="number" class="form-control" id="plan6m" min="0" />
+          </div>
+          <div class="col-auto">
+            <label class="form-label">1 Year Price:</label>
+            <input type="number" class="form-control" id="plan1y" min="0" />
+          </div>
+          <div class="col-auto">
+            <label class="form-label">2 Years Price:</label>
+            <input type="number" class="form-control" id="plan2y" min="0" />
+          </div>
+          <div class="col-auto">
+            <button class="btn btn-primary" id="savePlanPricesBtn">Save Prices</button>
+          </div>
+          <div class="col-auto" id="planStatusMsg"></div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tab-pane fade" id="sales" role="tabpanel" aria-labelledby="sales-tab">
+        <h2>Sales & Subscription History</h2>
+        <h4>Overall Revenue Summary</h4>
+        <div class="row mb-4 g-4">
+            <div class="col-md-4">
+                <div class="card card-summary p-3 bg-info text-white">
+                    <p class="mb-0">Total Approved Shops</p>
+                    <h3 id="totalApprovedShops">0</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-summary p-3 bg-success text-white">
+                    <p class="mb-0">Estimated Lifetime Revenue (₹)</p>
+                    <h3 id="lifetimeRevenue">₹0</h3>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card card-summary p-3 bg-warning text-dark">
+                    <p class="mb-0">Shops on Trial/Pending</p>
+                    <h3 id="totalTrialShops">0</h3>
+                </div>
+            </div>
+        </div>
+        
+        <h4>Sales History by Month (Based on Registration Date)</h4>
+        <div id="monthlySalesChart" class="table-responsive">
+            <p class="text-muted">Loading sales data...</p>
+        </div>
+    </div>
+    
+    <div class="tab-pane fade" id="remote" role="tabpanel" aria-labelledby="remote-tab">
+        <h2>Remote Job Entry & Troubleshooting</h2>
+        <h4>Search Customer Jobs by Mobile/Shop ID for Remote Entry</h4>
+        <div class="input-group mb-3" style="max-width: 600px;">
+            <input type="text" class="form-control" id="remoteSearchInput" placeholder="Enter Customer Mobile No or Shop ID">
+            <button class="btn btn-primary" type="button" id="remoteSearchBtn">Search Shop</button>
+        </div>
+        
+        <div id="remoteAccessResult" class="mt-4">
+            <p class="text-muted">Search above to load a shop's job panel for remote troubleshooting/entry.</p>
+        </div>
     </div>
 
-    <div class="col-md-6 export-group d-flex justify-content-end gap-2">
-      <button id="exportCsvBtn" class="btn btn-success btn-sm">Export CSV</button>
-      <button id="exportPdfBtn" class="btn btn-danger btn-sm">Export PDF</button>
-    </div>
-  </div>
+    <div class="tab-pane fade" id="unlocking" role="tabpanel" aria-labelledby="unlocking-tab">
+        <h2>Online Unlocking Service Management</h2>
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <h4>1. Technician Performance & Due Charges</h4>
+                <p class="text-muted">Completed jobs are reset after "Mark Paid".</p>
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered" id="techTrackingTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Tech Name</th>
+                                <th>Platform Charge (₹)</th>
+                                <th>Completed Jobs</th>
+                                <th>Total Due (₹)</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="techListBody">
+                            <tr><td colspan="5" class="text-center text-muted">Loading performance data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-  <div class="table-responsive">
-    <table class="table table-striped table-bordered align-middle text-center" id="shopsTable">
-      <thead class="table-dark">
-        <tr>
-          <th>Shop ID</th>
-          <th>Shop Name</th>
-          <th>Email</th>
-          <th>Mobile</th>
-          <th>Plan</th>
-          <th>Price (₹)</th>
-          <th>Subscription Ends</th>
-          <th>Approval Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="shopListBody">
-        <tr><td colspan="9" class="text-center text-muted">Loading shops...</td></tr>
-      </tbody>
-    </table>
-  </div>
+            <div class="col-md-6">
+                <h4>2. Add/Update Technician</h4>
+                <form id="techForm" class="p-3 border rounded mb-4 bg-light">
+                    <input type="text" id="techName" class="form-control mb-2" placeholder="Technician Name" required>
+                    <input type="email" id="techEmail" class="form-control mb-2" placeholder="Technician Email (For Login)" required>
+                    <input type="text" id="techUid" class="form-control mb-2" placeholder="Firebase User ID (UID)" required>
+                    <input type="number" id="platformCharge" class="form-control mb-2" placeholder="Platform Charge (₹) per job" required min="0">
+                    <button type="submit" class="btn btn-success w-100">Add/Update Technician</button>
+                </form>
 
-  <div class="plan-pricing-group">
-    <h4>Manage Product Prices</h4>
-    <div class="row g-3 align-items-center">
-      <div class="col-auto">
-        <label class="form-label">6 Months Price:</label>
-        <input type="number" class="form-control" id="plan6m" min="0" />
-      </div>
-      <div class="col-auto">
-        <label class="form-label">1 Year Price:</label>
-        <input type="number" class="form-control" id="plan1y" min="0" />
-      </div>
-      <div class="col-auto">
-        <label class="form-label">2 Years Price:</label>
-        <input type="number" class="form-control" id="plan2y" min="0" />
-      </div>
-      <div class="col-auto">
-        <button class="btn btn-primary" id="savePlanPricesBtn">Save Prices</button>
-      </div>
-      <div id="planStatusMsg" class="mt-2"></div>
+                <h4>3. Public Unlocking Rates Management</h4>
+                <form id="rateForm" class="p-3 border rounded mb-4 bg-light">
+                    <input type="text" id="serviceId" class="form-control mb-2" placeholder="Service ID (e.g., samsung-frp)" required>
+                    <input type="text" id="serviceName" class="form-control mb-2" placeholder="Service Name" required>
+                    <input type="number" id="servicePrice" class="form-control mb-2" placeholder="Customer Price (₹)" required>
+                    <input type="text" id="serviceDuration" class="form-control mb-2" placeholder="Duration (e.g., 1-2 Hours)">
+                    <button type="submit" class="btn btn-primary w-100">Add/Update Service Rate</button>
+                </form>
+                <div id="currentRates"></div>
+            </div>
+        </div>
     </div>
+
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.25/dist/jspdf.plugin.autotable.min.js"></script>
 
 <script type="module">
+  
   import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+  import { getFirestore, collection, onSnapshot, doc, updateDoc, getDoc, query, where, serverTimestamp, getDocs, addDoc, setDoc, limit } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
   import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
+  // TODO: Replace with your actual Firebase Config
   const firebaseConfig = {
-    apiKey: "AIzaSyDBCalxCVKnVERmpLnnCjT0X9Basy3uw7o",
+    apiKey: "AIzaSyDBCalxCVKnVERmpLnnCjT0X9Basy3uw7o", 
     authDomain: "reparify-4db99.firebaseapp.com",
     projectId: "reparify-4db99",
     storageBucket: "reparify-4db99.appspot.com",
@@ -115,23 +232,71 @@
   const shopListBody = document.getElementById('shopListBody');
   const shopsTable = document.getElementById('shopsTable');
   let shopsData = [];
+  let currentPlanPrices = {}; 
 
-  // Logout Button fix
+  // --- Core Utility Functions ---
+
+  // Auth Check and Logout
   document.getElementById('logoutBtn').addEventListener('click', () => {
     signOut(auth).then(() => window.location.href = 'login.html');
   });
 
-  // Auth check
   onAuthStateChanged(auth, (user) => {
+    // Admin check: Only allow access if user exists and email is 'admin@repari.fy'
     if (!user || user.email !== 'admin@repari.fy') {
       window.location.href = 'login.html';
     }
   });
 
+  // --- Section 1: Shop Management & Price Load ---
+
+  const plan6mInput = document.getElementById('plan6m');
+  const plan1yInput = document.getElementById('plan1y');
+  const plan2yInput = document.getElementById('plan2y');
+  const savePlanPricesBtn = document.getElementById('savePlanPricesBtn');
+  const planStatusMsg = document.getElementById('planStatusMsg');
+  const settingsRef = doc(db, 'settings', 'prices');
+
+  async function loadPlanPrices() {
+    try {
+      const docSnap = await getDoc(settingsRef);
+      if (docSnap.exists()) {
+        const prices = docSnap.data();
+        plan6mInput.value = prices['6months'] || '';
+        plan1yInput.value = prices['1year'] || '';
+        plan2yInput.value = prices['2years'] || '';
+        currentPlanPrices = prices; 
+      }
+    } catch (error) {
+      console.error("Error loading prices: ", error);
+    }
+  }
+
+  savePlanPricesBtn.addEventListener('click', async () => {
+    const prices = {
+      '6months': parseFloat(plan6mInput.value) || 0,
+      '1year': parseFloat(plan1yInput.value) || 0,
+      '2years': parseFloat(plan2yInput.value) || 0,
+      updatedAt: serverTimestamp()
+    };
+
+    try {
+      await setDoc(settingsRef, prices, { merge: true });
+      currentPlanPrices = prices; 
+      planStatusMsg.innerHTML = '<span class="text-success">Prices saved successfully!</span>';
+      renderTable(shopsData); 
+    } catch (error) {
+      planStatusMsg.innerHTML = `<span class="text-danger">Error saving prices: ${error.message}</span>`;
+    }
+  });
+  
   // Load shops realtime
   onSnapshot(collection(db, 'shops'), (snapshot) => {
     shopsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     renderTable(shopsData);
+    if (Object.keys(currentPlanPrices).length > 0) {
+        calculateRevenue(shopsData, currentPlanPrices);
+    }
   }, (err) => {
     shopListBody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Failed to load shop data</td></tr>`;
   });
@@ -143,19 +308,14 @@
     }
     shopListBody.innerHTML = '';
     data.forEach(shop => {
-      const planPrices = {
-        trial: 'Free',
-        '6months': document.getElementById('plan6m').value || 'N/A',
-        '1year': document.getElementById('plan1y').value || 'N/A',
-        '2years': document.getElementById('plan2y').value || 'N/A'
-      };
-      const price = planPrices[shop.subscriptionStatus?.toLowerCase()] || 'N/A';
-      const subEnds = shop.subscriptionEnds?.toDate ? shop.subscriptionEnds.toDate().toLocaleDateString() : 'N/A';
+      
+      const price = currentPlanPrices[shop.subscriptionStatus?.toLowerCase()] || 'N/A';
+      const subEnds = shop.subscriptionEnds?.toDate ? shop.subscriptionEnds.toDate().toLocaleDateString('en-US') : 'N/A';
       const approvedBadge = shop.isApproved ? `<span class="badge bg-success">Approved</span>` : `<span class="badge bg-warning">Pending</span>`;
 
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${shop.id}</td>
+        <td>${shop.id.substring(0, 4)}...</td>
         <td>${shop.shopName || '-'}</td>
         <td>${shop.email || '-'}</td>
         <td>${shop.mobileNo || '-'}</td>
@@ -164,6 +324,7 @@
           <option value="6months" ${shop.subscriptionStatus === '6months' ? 'selected' : ''}>6 Months</option>
           <option value="1year" ${shop.subscriptionStatus === '1year' ? 'selected' : ''}>1 Year</option>
           <option value="2years" ${shop.subscriptionStatus === '2years' ? 'selected' : ''}>2 Years</option>
+          <option value="revoked" ${shop.subscriptionStatus === 'revoked' ? 'selected' : ''}>Revoked</option>
         </select></td>
         <td>₹${price}</td>
         <td>${subEnds}</td>
@@ -194,21 +355,25 @@
     if (!confirm(`Are you sure to ${approve ? 'approve' : 'revoke'} this shop?`)) return;
     const now = new Date();
     let subscriptionEnds = null;
+    let currentPlan = document.querySelector(`select[data-id="${id}"]`).value;
+
     if (approve) {
-      const plan = document.querySelector(`select[data-id="${id}"]`).value;
-      switch (plan) {
-        case '6months': subscriptionEnds = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000); break;
-        case '1year': subscriptionEnds = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); break;
-        case '2years': subscriptionEnds = new Date(now.getTime() + 2 * 365 * 24 * 60 * 60 * 1000); break;
-        default: subscriptionEnds = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-      }
+      const plan = currentPlan;
+      let months;
+      if (plan === '6months') months = 6;
+      else if (plan === '1year') months = 12;
+      else if (plan === '2years') months = 24;
+      else months = 1; 
+
+      subscriptionEnds = new Date(now.getTime() + months * 30 * 24 * 60 * 60 * 1000);
     }
+
     try {
       await updateDoc(doc(db, 'shops', id), {
         isApproved: approve,
-        subscriptionStatus: approve ? document.querySelector(`select[data-id="${id}"]`).value : 'revoked',
+        subscriptionStatus: approve ? currentPlan : 'revoked',
         subscriptionEnds,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp() 
       });
       alert(`Shop ${approve ? 'approved' : 'revoked'} successfully.`);
     } catch (error) {
@@ -219,17 +384,20 @@
   async function handlePlanChange(id, plan) {
     const now = new Date();
     let subscriptionEnds;
-    switch (plan) {
-      case '6months': subscriptionEnds = new Date(now.getTime() + 6 * 30 * 24 * 60 * 60 * 1000); break;
-      case '1year': subscriptionEnds = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000); break;
-      case '2years': subscriptionEnds = new Date(now.getTime() + 2 * 365 * 24 * 60 * 60 * 1000); break;
-      default: subscriptionEnds = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-    }
+    let months;
+    if (plan === '6months') months = 6;
+    else if (plan === '1year') months = 12;
+    else if (plan === '2years') months = 24;
+    else months = 1; 
+
+    subscriptionEnds = new Date(now.getTime() + months * 30 * 24 * 60 * 60 * 1000);
+    
     try {
       await updateDoc(doc(db, 'shops', id), {
         subscriptionStatus: plan,
-        subscriptionEnds,
-        updatedAt: serverTimestamp()
+        subscriptionEnds: plan === 'revoked' ? null : subscriptionEnds,
+        isApproved: plan !== 'revoked', 
+        updatedAt: serverTimestamp() 
       });
       alert('Plan updated successfully.');
     } catch (error) {
@@ -237,7 +405,7 @@
     }
   }
 
-  // Search and Filter
+  // Search and Filter logic
   const searchInput = document.getElementById('searchInput');
   const filterSelect = document.getElementById('filterSelect');
   const clearFilterBtn = document.getElementById('clearFilterBtn');
@@ -269,7 +437,314 @@
     renderTable(filtered);
   }
 
-  window.onload = () => {};
+
+  // --- Section 2: Sales & Revenue Logic ---
+
+  function calculateRevenue(shopsData, prices) {
+      let totalRevenue = 0;
+      let approvedCount = 0;
+      let trialCount = 0;
+      let monthlySales = {}; 
+
+      for (const shop of shopsData) {
+          if (shop.isApproved && shop.subscriptionStatus !== 'revoked') {
+              approvedCount++;
+          }
+          if (!shop.isApproved || shop.subscriptionStatus === 'trial') {
+              trialCount++;
+          }
+          
+          // Calculate Revenue & Monthly Sales
+          const planKey = shop.subscriptionStatus;
+          let price = 0;
+          if (shop.isApproved && planKey && planKey !== 'trial' && planKey !== 'revoked' && prices[planKey]) {
+              price = prices[planKey];
+              totalRevenue += price;
+          }
+          
+          // Calculate Monthly Sales based on creation date
+          if (shop.createdAt && shop.createdAt.toDate) {
+              const date = shop.createdAt.toDate();
+              const yearMonth = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+              
+              if (!monthlySales[yearMonth]) {
+                  monthlySales[yearMonth] = { revenue: 0, count: 0 };
+              }
+
+              if (shop.isApproved && planKey && planKey !== 'trial' && planKey !== 'revoked' && prices[planKey]) {
+                  monthlySales[yearMonth].revenue += prices[planKey];
+                  monthlySales[yearMonth].count += 1;
+              }
+          }
+      }
+
+      document.getElementById('totalApprovedShops').textContent = approvedCount;
+      document.getElementById('lifetimeRevenue').textContent = `₹${totalRevenue.toLocaleString('en-IN')}`;
+      document.getElementById('totalTrialShops').textContent = trialCount;
+      
+      renderMonthlySalesTable(monthlySales);
+  }
+
+  function renderMonthlySalesTable(salesData) {
+      const container = document.getElementById('monthlySalesChart');
+      let html = `<table class="table table-bordered table-striped">
+          <thead><tr><th>Month/Year</th><th>New Paid Subscriptions</th><th>Monthly Revenue (₹)</th></tr></thead>
+          <tbody>`;
+          
+      const sortedKeys = Object.keys(salesData).sort().reverse();
+      
+      if (sortedKeys.length === 0) {
+        container.innerHTML = `<p class="text-muted">No paid subscriptions found yet.</p>`;
+        return;
+      }
+
+      sortedKeys.forEach(key => {
+          const data = salesData[key];
+          const displayMonth = new Date(key).toLocaleString('en-US', { year: 'numeric', month: 'long' });
+          
+          html += `<tr>
+              <td>${displayMonth}</td>
+              <td>${data.count}</td>
+              <td>₹${data.revenue.toLocaleString('en-IN')}</td>
+          </tr>`;
+      });
+      
+      html += `</tbody></table>`;
+      container.innerHTML = html;
+  }
+
+  // --- Section 3: Remote Access Logic ---
+
+  document.getElementById('remoteSearchBtn').addEventListener('click', async () => {
+      const searchTerm = document.getElementById('remoteSearchInput').value.trim();
+      const resultDiv = document.getElementById('remoteAccessResult');
+
+      if (!searchTerm) return alert("Please enter a Mobile No or Shop ID.");
+      resultDiv.innerHTML = `<p class="text-info">Searching...</p>`;
+
+      let shopIdToAccess = searchTerm;
+      let shopDoc;
+      
+      if (searchTerm.length !== 28) { 
+          const q = query(collection(db, 'shops'), where('mobileNo', '==', searchTerm), limit(1));
+          const snapshot = await getDocs(q); 
+          if (snapshot.empty) {
+              resultDiv.innerHTML = `<p class="text-danger">No shop found with that Mobile Number or ID.</p>`;
+              return;
+          }
+          shopDoc = snapshot.docs[0];
+          shopIdToAccess = shopDoc.id;
+      } else {
+        shopDoc = await getDoc(doc(db, 'shops', shopIdToAccess));
+      }
+      
+      if (!shopDoc || !shopDoc.exists() || !shopDoc.data().isApproved) {
+          resultDiv.innerHTML = `<p class="text-danger">Shop not found or not approved.</p>`;
+          return;
+      }
+      const targetShopData = shopDoc.data();
+      
+      resultDiv.innerHTML = `
+          <div class="card p-4 border-success">
+              <h5 class="card-title text-success">Remote Entry for: ${targetShopData.shopName}</h5>
+              <p class="card-subtitle mb-3 text-muted">ID: ${shopIdToAccess.substring(0, 4)}... | Email: ${targetShopData.email}</p>
+              <form id="remoteJobEntryForm">
+                  <input type="hidden" id="remoteShopId" value="${shopIdToAccess}" />
+                  <input type="hidden" id="remoteShopName" value="${targetShopData.shopName}" />
+                  <p class="text-info">Job will be created on the customer's dashboard.</p>
+                  <div class="row g-3">
+                      <div class="col-md-6"><input type="text" id="rCustomerName" class="form-control" placeholder="Customer Name" required /></div>
+                      <div class="col-md-6"><input type="tel" id="rCustomerMobile" class="form-control" placeholder="Mobile No (WhatsApp)" required /></div>
+                      <div class="col-md-6"><input type="text" id="rDeviceModel" class="form-control" placeholder="Device Model" required /></div>
+                      <div class="col-md-6"><input type="text" id="rImei" class="form-control" placeholder="IMEI Number (Optional)" maxlength="15" /></div>
+                      <div class="col-12"><textarea id="rIssueDesc" class="form-control" placeholder="Issue Description" rows="3" required></textarea></div>
+                      <div class="col-12"><button type="submit" class="btn btn-success w-100">Create Remote Job</button></div>
+                  </div>
+              </form>
+          </div>`;
+
+      document.getElementById('remoteJobEntryForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const form = e.target;
+          
+          const newJob = {
+              customerName: form.rCustomerName.value.trim(),
+              customerMobile: form.rCustomerMobile.value.trim(),
+              deviceType: 'mobile', 
+              deviceName: form.rDeviceModel.value.trim(),
+              imeiNumber: form.rImei.value.trim().toUpperCase(),
+              issueDescription: form.rIssueDesc.value.trim(),
+              currentStatus: "Received",
+              estimatedCost: 0,
+              receivedOn: serverTimestamp(),
+              shopId: form.remoteShopId.value, 
+              shopName: form.remoteShopName.value,
+              createdBy: 'Admin', 
+          };
+
+          try {
+              await addDoc(collection(db, "jobs"), newJob);
+              alert("Remote Job created successfully for " + newJob.shopName + "!");
+              form.reset();
+          } catch (err) {
+              alert("Failed to create job card! Check console.");
+              console.error(err);
+          }
+      });
+  });
+
+  // --- Section 4: Online Unlocking Logic ---
+
+  const techListBody = document.getElementById('techListBody');
+  
+  // A. Technician Management (Add/Update Tech)
+  document.getElementById('techForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const techName = document.getElementById('techName').value.trim();
+      const techUid = document.getElementById('techUid').value.trim();
+      const techEmail = document.getElementById('techEmail').value.trim();
+      const platformCharge = parseFloat(document.getElementById('platformCharge').value);
+
+      if (techUid.length !== 28) return alert("Please enter a valid Firebase User ID (UID).");
+
+      try {
+          await setDoc(doc(db, 'technicians', techUid), {
+              name: techName,
+              email: techEmail,
+              platformCharge: platformCharge,
+              status: 'Active',
+              createdAt: serverTimestamp()
+          });
+          alert(`Technician ${techName} added/updated successfully!`);
+          e.target.reset();
+      } catch (error) {
+          alert('Error adding technician: ' + error.message);
+      }
+  });
+
+  // B. Public Rate Management (Admin sets public prices)
+  document.getElementById('rateForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const serviceId = document.getElementById('serviceId').value.trim().toLowerCase().replace(/\s/g, '-');
+      const serviceName = document.getElementById('serviceName').value.trim();
+      const price = parseFloat(document.getElementById('servicePrice').value);
+      const duration = document.getElementById('serviceDuration').value.trim();
+
+      try {
+          await setDoc(doc(db, 'unlockRates', serviceId), {
+              serviceName,
+              price,
+              duration,
+              updatedAt: serverTimestamp()
+          });
+          alert(`Service Rate for ${serviceName} updated successfully.`);
+          document.getElementById('rateForm').reset();
+      } catch (error) {
+          alert('Error saving rate: ' + error.message);
+      }
+  });
+
+  // Load and Render Current Rates
+  onSnapshot(collection(db, 'unlockRates'), (snapshot) => {
+    let ratesHtml = '<h6>Current Services:</h6><ul class="list-group">';
+    if (snapshot.empty) {
+        ratesHtml += '<li class="list-group-item text-muted">No unlocking rates set.</li>';
+    } else {
+        snapshot.forEach(doc => {
+            const rate = doc.data();
+            ratesHtml += `<li class="list-group-item"><strong>${rate.serviceName}</strong> (ID: ${doc.id}) - ₹${rate.price} (${rate.duration})</li>`;
+        });
+    }
+    ratesHtml += '</ul>';
+    document.getElementById('currentRates').innerHTML = ratesHtml;
+  });
+
+  // C. Realtime Listener for Technician Performance Tracking
+  onSnapshot(collection(db, 'technicians'), async (snapshot) => {
+      let techs = [];
+      snapshot.forEach(doc => techs.push({ id: doc.id, ...doc.data() }));
+
+      if (techs.length === 0) {
+          techListBody.innerHTML = `<tr><td colspan="5" class="text-center">No technicians registered.</td></tr>`;
+          return;
+      }
+
+      const q = query(collection(db, 'unlockOrders'), where('status', '==', 'Completed'));
+      const ordersSnapshot = await getDocs(q);
+      
+      const techPerformance = {};
+      ordersSnapshot.forEach(orderDoc => {
+          const order = orderDoc.data();
+          if (order.technicianId) { 
+              if (!techPerformance[order.technicianId]) {
+                  techPerformance[order.technicianId] = { jobs: 0, platformCharge: 0 };
+              }
+              
+              const platformChargePerJob = techs.find(t => t.id === order.technicianId)?.platformCharge || 0;
+              techPerformance[order.technicianId].jobs += 1;
+              techPerformance[order.technicianId].platformCharge += platformChargePerJob;
+          }
+      });
+
+      // Render Table
+      techListBody.innerHTML = '';
+      techs.forEach(tech => {
+          const perf = techPerformance[tech.id] || { jobs: 0, platformCharge: 0 };
+          const totalDue = perf.platformCharge;
+          
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+              <td>${tech.name} <span class="badge ${tech.status === 'Active' ? 'bg-success' : 'bg-danger'}">${tech.status}</span></td>
+              <td>₹${tech.platformCharge || 0}</td>
+              <td>${perf.jobs}</td>
+              <td>₹${totalDue.toLocaleString('en-IN')}</td>
+              <td>
+                  <button class="btn btn-sm btn-info mark-paid-btn" data-id="${tech.id}" data-due="${totalDue}" ${totalDue === 0 ? 'disabled' : ''}>Mark Paid</button>
+                  <button class="btn btn-sm btn-warning status-btn" data-id="${tech.id}" data-status="${tech.status}">${tech.status === 'Active' ? 'Deactivate' : 'Activate'}</button>
+              </td>
+          `;
+          techListBody.appendChild(tr);
+      });
+
+      // Attach Dynamic Events (Mark Paid & Status Change)
+      document.querySelectorAll('.mark-paid-btn').forEach(btn => {
+          btn.onclick = () => handleMarkPaid(btn.dataset.id, btn.dataset.due);
+      });
+      document.querySelectorAll('.status-btn').forEach(btn => {
+          btn.onclick = () => handleTechStatusChange(btn.dataset.id, btn.dataset.status);
+      });
+
+  });
+
+  // D. Mark Paid Logic (Simplified)
+  async function handleMarkPaid(techId, amountDue) {
+      if (confirm(`Confirm payment of ₹${amountDue} to Technician ${techId}. Note: This is a placeholder. A full settlement logic is required in the backend.`)) {
+          
+          alert(`Payment of ₹${amountDue} recorded. Please update the relevant 'unlockOrders' to 'Settled' manually or implement a dedicated backend function.`);
+          
+      }
+  }
+
+  // E. Technician Activation/Deactivation
+  async function handleTechStatusChange(techId, currentStatus) {
+      const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+      if (confirm(`Are you sure you want to ${newStatus} Technician ${techId}?`)) {
+          try {
+              await updateDoc(doc(db, 'technicians', techId), {
+                  status: newStatus,
+                  updatedAt: serverTimestamp()
+              });
+              alert(`Technician status updated to ${newStatus}.`);
+          } catch (error) {
+              alert('Error updating status: ' + error.message);
+          }
+      }
+  }
+
+  // --- Initial Load ---
+  window.onload = () => {
+    loadPlanPrices();
+  };
 
 </script>
 
