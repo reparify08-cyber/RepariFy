@@ -1,21 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<title>RepariFy Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
-<style>
-  body { font-family: 'Poppins', sans-serif; background: #f8f9fa; padding-top: 80px; }
-  .dashboard-container { max-width: 1200px; margin: auto; }
-  .nav-tabs .nav-link.active { font-weight: 600; }
-  .table-responsive { max-height: 450px; overflow-y: scroll; }
-  .btn-actions > button { margin-right: 4px; }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RepariFy Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #f8f9fa;
+      padding-top: 80px;
+    }
+    .dashboard-container {
+      max-width: 1200px;
+      margin: auto;
+    }
+    .nav-tabs .nav-link.active {
+      font-weight: 600;
+    }
+    .table-responsive {
+      max-height: 450px;
+      overflow-y: auto;
+    }
+    .btn-actions > button {
+      margin-right: 4px;
+    }
+    .signature-box {
+      margin-top: 30px;
+      border-top: 1px solid #000;
+      width: 150px;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+      padding-top: 5px;
+      font-weight: 600;
+    }
+    .powered-by {
+      font-size: 8px;
+      color: #666;
+      text-align: center;
+      margin-top: 50px;
+    }
+  </style>
 </head>
 <body>
-
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container-fluid d-flex justify-content-between">
     <a class="navbar-brand" href="index.html">RepariFy Dashboard</a>
@@ -24,8 +53,6 @@
 </nav>
 
 <div class="container dashboard-container mt-3">
-
-  <!-- Nav tabs -->
   <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" id="mobile-tab" data-bs-toggle="tab" data-bs-target="#mobile" type="button" role="tab" aria-controls="mobile" aria-selected="true">Mobile Repair</button>
@@ -39,7 +66,7 @@
   </ul>
 
   <div class="tab-content mt-3">
-    <!-- Mobile Repair Tab -->
+    <!-- Mobile Repair -->
     <div class="tab-pane fade show active" id="mobile" role="tabpanel" aria-labelledby="mobile-tab">
       <h4>New Mobile Repair Job</h4>
       <form id="mobileJobForm">
@@ -53,7 +80,7 @@
           <input type="text" id="mDeviceModel" class="form-control" placeholder="Device Model (e.g. Samsung A50)" required />
         </div>
         <div class="mb-3">
-          <input type="text" id="mImei" class="form-control" placeholder="IMEI Number (Mandatory)" required pattern="\d{15}" maxlength="15" />
+          <input type="text" id="mImei" class="form-control" placeholder="IMEI Number (15 digits)" required pattern="\\d{15}" maxlength="15" />
         </div>
         <div class="mb-3">
           <textarea id="mIssueDesc" class="form-control" placeholder="Issue Description" rows="3" required></textarea>
@@ -62,7 +89,7 @@
       </form>
     </div>
 
-    <!-- Computer Repair Tab -->
+    <!-- Computer Repair -->
     <div class="tab-pane fade" id="computer" role="tabpanel" aria-labelledby="computer-tab">
       <h4>New Computer Repair Job</h4>
       <form id="computerJobForm">
@@ -75,12 +102,12 @@
         <div class="mb-3">
           <select id="cDeviceBrand" class="form-select" required>
             <option value="" disabled selected>Select Brand</option>
-            <option value="Dell">Dell</option>
-            <option value="HP">HP</option>
-            <option value="Lenovo">Lenovo</option>
-            <option value="Acer">Acer</option>
-            <option value="Asus">Asus</option>
-            <option value="Apple">Apple</option>
+            <option>Dell</option>
+            <option>HP</option>
+            <option>Lenovo</option>
+            <option>Acer</option>
+            <option>Asus</option>
+            <option>Apple</option>
             <!-- Add more brands as needed -->
           </select>
         </div>
@@ -94,7 +121,7 @@
       </form>
     </div>
 
-    <!-- Unlocking Service Tab -->
+    <!-- Unlocking Service -->
     <div class="tab-pane fade" id="unlocking" role="tabpanel" aria-labelledby="unlocking-tab">
       <h4>Mobile Unlocking Service Declaration</h4>
       <form id="unlockingForm">
@@ -107,38 +134,66 @@
         <div class="mb-3">
           <label>Contact Number: <span id="unlockShopContact"></span></label>
         </div>
-        <div class="mb-3">Brand & Model:<input type="text" id="uBrandModel" class="form-control" required /></div>
-        <div class="mb-3">IMEI Number:<input type="text" id="uImei" class="form-control" required pattern="\d{15}" maxlength="15" /></div>
+        <div class="mb-3">
+          <label>Brand & Model:</label>
+          <input type="text" id="uBrandModel" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label>IMEI Number:</label>
+          <input type="text" id="uImei" class="form-control" required pattern="\\d{15}" maxlength="15" />
+        </div>
 
         <label>Type of Unlocking Required:</label>
-        <div class="form-check"><input class="form-check-input" type="checkbox" id="unlockPin" /><label class="form-check-label" for="unlockPin">Pattern/PIN Unlock</label></div>
-        <div class="form-check"><input class="form-check-input" type="checkbox" id="unlockFrp" /><label class="form-check-label" for="unlockFrp">FRP (Google Account) Unlock</label></div>
-        <div class="form-check"><input class="form-check-input" type="checkbox" id="unlockNetwork" /><label class="form-check-label" for="unlockNetwork">Network Unlock</label></div>
-        <div class="form-check"><input class="form-check-input" type="checkbox" id="unlockOthers" /><label class="form-check-label" for="unlockOthers">Others</label></div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="unlockPin" />
+          <label class="form-check-label" for="unlockPin">Pattern/PIN Unlock</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="unlockFrp" />
+          <label class="form-check-label" for="unlockFrp">FRP (Google Account) Unlock</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="unlockNetwork" />
+          <label class="form-check-label" for="unlockNetwork">Network Unlock</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="unlockOthers" />
+          <label class="form-check-label" for="unlockOthers">Others</label>
+        </div>
 
         <div class="mb-3 mt-3">
-          <label>Full Name:</label><input type="text" id="uFullName" class="form-control" required />
+          <label>Full Name:</label>
+          <input type="text" id="uFullName" class="form-control" required />
         </div>
         <div class="mb-3">
-          <label>Address:</label><textarea id="uAddress" class="form-control" rows="3" required></textarea>
+          <label>Address:</label>
+          <textarea id="uAddress" class="form-control" rows="3" required></textarea>
         </div>
         <div class="mb-3">
-          <label>Phone Number:</label><input type="tel" id="uPhoneNumber" class="form-control" required />
+          <label>Phone Number:</label>
+          <input type="tel" id="uPhoneNumber" class="form-control" required />
         </div>
         <div class="mb-3">
-          <label>ID Type & Number:</label><input type="text" id="uIdTypeNumber" class="form-control" required />
+          <label>ID Type & Number:</label>
+          <input type="text" id="uIdTypeNumber" class="form-control" required />
         </div>
         <div class="mb-3">
-          <label>Date:</label><input type="date" id="uDate" class="form-control" required />
+          <label>Date:</label>
+          <input type="date" id="uDate" class="form-control" required />
         </div>
-        <hr/>
+        <hr />
         <div class="mb-4">
           <h6>Declaration:</h6>
-          <p>I, the undersigned, hereby declare that I am the lawful owner/user of the mobile phone submitted for unlocking...</p>
-          <!-- place full text or load dynamically -->
+          <p style="font-size: 0.9rem;">
+            I, the undersigned, hereby declare that I am the lawful owner/user of the mobile phone submitted for unlocking.<br />
+            1. This unlocking is being done at my own request and risk.<br />
+            2. The Mobile Solution and its technician(s) are not responsible for any data loss, damage, or legal issues.<br />
+            3. I confirm that the device is not stolen or involved in any criminal or unlawful activity.<br />
+            4. I am submitting a valid ID proof for record and verification purposes.
+          </p>
         </div>
         <div class="mb-3">
-          <label>Customer Signature (Type Name):</label>
+          <label>Customer Signature (Enter Name):</label>
           <input type="text" id="uCustomerSignature" class="form-control" required />
         </div>
         <button type="submit" class="btn btn-danger w-100">Create Unlocking Job Card & Generate PDF</button>
@@ -146,25 +201,41 @@
     </div>
   </div>
 
-  <!-- Update/Edit Modal -->
-  <div class="modal fade" id="editJobModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <form class="modal-content" id="editJobForm">
-        <div class="modal-header">
-          <h5 class="modal-title">Update Job</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <input type="hidden" id="editJobId" />
-          <div class="mb-3">
-            <label for="editCustomerName" class="form-label">Customer Name</label>
-            <input type="text" class="form-control" id="editCustomerName" required />
-          </div>
-          <div class="mb-3">
-            <label for="editCustomerMobile" class="form-label">Customer Mobile</label>
-            <input type="text" class="form-control" id="editCustomerMobile" required />
-          </div>
-          <div class="mb-3">
+  <h4 class="mt-4">Recent Jobs</h4>
+  <div class="table-responsive">
+    <table class="table table-striped table-hover" id="jobsTable">
+      <thead>
+        <tr class="bg-light">
+          <th>Job ID</th>
+          <th>Device Type</th>
+          <th>Customer Name</th>
+          <th>Mobile No.</th>
+          <th>Device Model</th>
+          <th>IMEI Number</th>
+          <th>Status</th>
+          <th>Estimated Cost (₹)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="jobs-table-body">
+        <tr><td colspan="9" class="text-center text-muted">Loading recent jobs...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal fade" id="editJobModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <form class="modal-content" id="editJobForm">
+      <div class="modal-header">
+        <h5 class="modal-title">Update Job</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="editJobId" />
+        <div class="row mb-3">
+          <div class="col-md-4">
             <label for="editDeviceType" class="form-label">Device Type</label>
             <select id="editDeviceType" class="form-select" required>
               <option value="mobile">Mobile Phone</option>
@@ -172,41 +243,53 @@
               <option value="unlocking">Unlocking Service</option>
             </select>
           </div>
-          <div class="mb-3">
+          <div class="col-md-8">
             <label for="editDeviceName" class="form-label">Device Model</label>
-            <input type="text" class="form-control" id="editDeviceName" required />
-          </div>
-          <div class="mb-3">
-            <label for="editImeiNumber" class="form-label">IMEI Number</label>
-            <input type="text" class="form-control" id="editImeiNumber" />
-          </div>
-          <div class="mb-3">
-            <label for="editIssueDescription" class="form-label">Issue Description</label>
-            <textarea class="form-control" id="editIssueDescription" rows="3" required></textarea>
-          </div>
-          <div class="mb-3">
-            <label for="editCurrentStatus" class="form-label">Current Status</label>
-            <select id="editCurrentStatus" class="form-select" required>
-              <option value="Received">Received for Inspection</option>
-              <option value="InProgress">Repair In Progress</option>
-              <option value="PartsWaiting">Waiting for Parts</option>
-              <option value="Ready">Ready for Delivery</option>
-              <option value="Delivered">Delivered</option>
-            </select>
-          </div>
-          <div class="mb-3">
-            <label for="editEstimatedCost" class="form-label">Estimated Cost (₹)</label>
-            <input type="number" class="form-control" id="editEstimatedCost" />
+            <input type="text" id="editDeviceName" class="form-control" required />
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Save Changes</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <div class="mb-3">
+          <label for="editCustomerName" class="form-label">Customer Name</label>
+          <input type="text" id="editCustomerName" class="form-control" required />
         </div>
-      </form>
-    </div>
+        <div class="mb-3">
+          <label for="editCustomerMobile" class="form-label">Customer Mobile</label>
+          <input type="text" id="editCustomerMobile" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label for="editImeiNumber" class="form-label">IMEI Number</label>
+          <input type="text" id="editImeiNumber" class="form-control" />
+        </div>
+        <div class="mb-3">
+          <label for="editIssueDescription" class="form-label">Issue Description</label>
+          <textarea id="editIssueDescription" class="form-control" rows="3" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label for="editCurrentStatus" class="form-label">Current Status</label>
+          <select id="editCurrentStatus" class="form-select" required>
+            <option value="Received">Received for Inspection</option>
+            <option value="InProgress">Repair In Progress</option>
+            <option value="PartsWaiting">Waiting for Parts</option>
+            <option value="Ready">Ready for Delivery</option>
+            <option value="Delivered">Delivered</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label for="editEstimatedCost" class="form-label">Estimated Cost (₹)</label>
+          <input type="number" id="editEstimatedCost" class="form-control" />
+        </div>
+        <hr/>
+        <div class="mb-3">
+          <button type="button" class="btn btn-outline-info" id="managePartsBtn">Manage Parts</button>
+        </div>
+        <div id="partsContainer"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </form>
   </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -216,7 +299,19 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, query, where, limit, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  onSnapshot,
+  doc,
+  getDoc,
+  query,
+  where,
+  limit,
+  updateDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDBCalxCVKnVERmpLnnCjT0X9Basy3uw7o",
@@ -235,72 +330,82 @@ const db = getFirestore();
 let currentUserId = null;
 let shopData = null;
 
-// Auth guard
 onAuthStateChanged(auth, user => {
-  if(user){
+  if (user) {
     currentUserId = user.uid;
-    getDoc(doc(db,"shops",currentUserId))
-      .then(docSnap=>{
-        if(docSnap.exists() && docSnap.data().isApproved){
+    getDoc(doc(db, "shops", currentUserId))
+      .then(docSnap => {
+        if (docSnap.exists() && docSnap.data().isApproved) {
           shopData = docSnap.data();
           document.title = `Dashboard - ${shopData.shopName}`;
           listenForJobs();
           fillUnlockingShopDetails();
-        }else{
+          setupManagePartsModal();
+        } else {
           alert("Access denied, not approved or revoked.");
           signOut(auth);
           window.location.href = "login.html";
         }
       })
-      .catch(err=>{
-        console.error("Shop fetch error",err);
+      .catch(err => {
+        console.error("Shop fetch error", err);
         signOut(auth);
-        window.location.href="login.html";
+        window.location.href = "login.html";
       });
-  }else{
+  } else {
     window.location.href = "login.html";
   }
 });
 
-document.getElementById("logoutBtn").addEventListener("click", ()=>signOut(auth).then(()=>window.location.href="login.html"));
-
+document.getElementById("logoutBtn").addEventListener("click", () =>
+  signOut(auth).then(() => {
+    window.location.href = "login.html";
+  })
+);
 
 // Mobile Job Form Submit
-document.getElementById("mobileJobForm").addEventListener("submit", e=>{
+document.getElementById("mobileJobForm").addEventListener("submit", e => {
   e.preventDefault();
   createJob("mobile");
 });
 
 // Computer Job Form Submit
-document.getElementById("computerJobForm").addEventListener("submit", e=>{
+document.getElementById("computerJobForm").addEventListener("submit", e => {
   e.preventDefault();
   createJob("computer");
 });
 
 // Unlocking Form Submit
-document.getElementById("unlockingForm").addEventListener("submit", e=>{
+document.getElementById("unlockingForm").addEventListener("submit", e => {
   e.preventDefault();
   createUnlockingJob();
 });
 
-// Create Mobile/Computer Job
-async function createJob(type){
-  if(!currentUserId){
+// --- Create job function ---
+async function createJob(type) {
+  if (!currentUserId) {
     alert("User not logged in, please refresh.");
     return;
   }
   const formId = type === "mobile" ? "mobileJobForm" : "computerJobForm";
   const form = document.getElementById(formId);
+  let estimatedCost = 0;
 
-  let newJob = {
+  if (type === "mobile") {
+    estimatedCost = parseFloat(form.querySelector("#estimatedCost")?.value) || 0;
+  } else {
+    estimatedCost = parseFloat(form.querySelector("#cEstimateInput")?.value) || 0;
+  }
+
+  const newJob = {
     customerName: form.querySelector("input[id$='CustomerName']").value.trim(),
     customerMobile: form.querySelector("input[id$='CustomerMobile']").value.trim(),
     deviceType: type,
-    deviceName: form.querySelector("input[id$='DeviceModel']").value.trim(),
-    imeiNumber: type==="mobile" ? form.querySelector("input[id$='Imei']").value.trim().toUpperCase() : "",
+    deviceName: form.querySelector(type === "mobile" ? "#mDeviceModel" : "#cDeviceModel").value.trim(),
+    imeiNumber: type === "mobile" ? form.querySelector("#mImei").value.trim().toUpperCase() : "",
     issueDescription: form.querySelector("textarea").value.trim(),
     currentStatus: "Received",
-    estimatedCost: 0,
+    estimatedCost: estimatedCost,
     receivedOn: serverTimestamp(),
     shopId: currentUserId,
     shopName: shopData.shopName || "",
@@ -308,28 +413,20 @@ async function createJob(type){
     workStartTime: null
   };
 
-  if(type==="mobile"){
-    const estCost = form.querySelector("input[placeholder='Estimated Cost (₹)']");
-    if(estCost) newJob.estimatedCost = parseFloat(estCost.value) || 0;
-  } else {
-    const estCostComp = form.querySelector("textarea#cIssueDesc").parentElement.nextElementSibling.querySelector("input");
-    if(estCostComp) newJob.estimatedCost = parseFloat(estCostComp.value) || 0;
-  }
-
   try {
-    await addDoc(collection(db,"jobs"), newJob);
+    await addDoc(collection(db, "jobs"), newJob);
     alert("Job card created successfully!");
     jobPrintConfirm(newJob);
     form.reset();
-  } catch(err){
+  } catch (err) {
     alert("Failed to create job card! Please try again.");
     console.error(err);
   }
 }
 
-// Create Unlocking Job
-async function createUnlockingJob(){
-  if(!currentUserId){
+// --- Unlocking job creation ---
+async function createUnlockingJob() {
+  if (!currentUserId) {
     alert("User not logged in, please refresh.");
     return;
   }
@@ -342,20 +439,21 @@ async function createUnlockingJob(){
   const date = document.getElementById("uDate").value.trim();
   const signature = document.getElementById("uCustomerSignature").value.trim();
 
-  // Collect unlocking types
   let unlockTypes = [];
-  if(document.getElementById("unlockPin").checked) unlockTypes.push("Pattern/PIN Unlock");
-  if(document.getElementById("unlockFrp").checked) unlockTypes.push("FRP (Google Account) Unlock");
-  if(document.getElementById("unlockNetwork").checked) unlockTypes.push("Network Unlock");
-  if(document.getElementById("unlockOthers").checked) unlockTypes.push("Others");
-
-  // Validate unlock types
-  if(unlockTypes.length === 0) {
+  if (document.getElementById("unlockPin").checked)
+    unlockTypes.push("Pattern/PIN Unlock");
+  if (document.getElementById("unlockFrp").checked)
+    unlockTypes.push("FRP (Google Account) Unlock");
+  if (document.getElementById("unlockNetwork").checked)
+    unlockTypes.push("Network Unlock");
+  if (document.getElementById("unlockOthers").checked)
+    unlockTypes.push("Others");
+  if (unlockTypes.length === 0) {
     alert("Please select at least one unlocking type.");
     return;
   }
 
-  let newJob = {
+  const newJob = {
     customerName: fullName,
     customerMobile: phoneNumber,
     deviceType: "unlocking",
@@ -368,7 +466,10 @@ async function createUnlockingJob(){
     shopId: currentUserId,
     shopName: shopData.shopName || "",
     unlockDetails: {
-      address, idTypeNumber, date, signature
+      address,
+      idTypeNumber,
+      date,
+      signature
     },
     parts: [],
     workStartTime: null
@@ -379,65 +480,74 @@ async function createUnlockingJob(){
     alert("Unlocking job created successfully!");
     generateUnlockPdf(newJob, docRef.id);
     document.getElementById("unlockingForm").reset();
-  } catch(err){
+  } catch (err) {
     alert("Failed to create unlocking job! Please try again.");
     console.error(err);
   }
 }
 
-// Recent Jobs Fetch
-function listenForJobs(){
-  const q = query(collection(db, "jobs"), where("shopId","==",currentUserId), limit(20));
-  onSnapshot(q, snapshot => {
-    const tbody = document.getElementById("jobs-table-body");
-    tbody.innerHTML = "";
-    if(snapshot.empty) {
-      tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No recent jobs found.</td></tr>`;
-      return;
+// --- Recent jobs listener ---
+function listenForJobs() {
+  const q = query(collection(db, "jobs"), where("shopId", "==", currentUserId), limit(20));
+  onSnapshot(
+    q,
+    snapshot => {
+      const tbody = document.getElementById("jobs-table-body");
+      tbody.innerHTML = "";
+      if (snapshot.empty) {
+        tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted">No recent jobs found.</td></tr>`;
+        return;
+      }
+      snapshot.forEach(doc => {
+        const job = doc.data();
+        const displayId = doc.id.substring(0, 5).toUpperCase();
+        const statusClass = {
+          Received: "bg-primary",
+          InProgress: "bg-warning text-dark",
+          PartsWaiting: "bg-danger",
+          Ready: "bg-success",
+          Delivered: "bg-secondary"
+        }[job.currentStatus] || "bg-info";
+        const partsInfo =
+          job.parts && job.parts.length > 0
+            ? `Parts (${job.parts.length})`
+            : "Add parts";
+        const workStarted = job.workStartTime ? "Started" : "Start Work";
+
+        const row = `<tr>
+          <td>${displayId}</td>
+          <td>${job.deviceType.charAt(0).toUpperCase() + job.deviceType.slice(1)}</td>
+          <td>${job.customerName}</td>
+          <td>${job.customerMobile}</td>
+          <td>${job.deviceName}</td>
+          <td>${job.imeiNumber || "-"}</td>
+          <td><span class="badge ${statusClass}">${job.currentStatus}</span></td>
+          <td>₹${job.estimatedCost || 0}</td>
+          <td class="btn-actions">
+            <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${doc.id}')">View/Update</button>
+            <button class="btn btn-sm btn-outline-success" onclick="downloadPdf('${doc.id}')">PDF</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="printPdf('${doc.id}')">Print</button>
+            <button class="btn btn-sm btn-outline-warning" onclick="startWork('${doc.id}')">${workStarted}</button>
+            <button class="btn btn-sm btn-outline-info" onclick="addParts('${doc.id}')">${partsInfo}</button>
+          </td>
+        </tr>`;
+        tbody.insertAdjacentHTML("beforeend", row);
+      });
+    },
+    err => {
+      console.error(err);
+      const tbody = document.getElementById("jobs-table-body");
+      tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger">Error loading jobs.</td></tr>`;
     }
-    snapshot.forEach(doc=>{
-      const job = doc.data();
-      const displayId = doc.id.substring(0,5).toUpperCase();
-      const statusClass = {
-        Received: "bg-primary",
-        InProgress: "bg-warning text-dark",
-        PartsWaiting: "bg-danger",
-        Ready: "bg-success",
-        Delivered: "bg-secondary"
-      }[job.currentStatus] || "bg-info";
-
-      const partsInfo = (job.parts && job.parts.length>0) ? `Parts (${job.parts.length})` : 'Add parts';
-      const workStarted = job.workStartTime ? 'Started' : 'Start Work';
-
-      const row = `<tr>
-        <td>${displayId}</td>
-        <td>${job.deviceName}</td>
-        <td>${job.imeiNumber || "-"}</td>
-        <td><span class="badge ${statusClass}">${job.currentStatus}</span></td>
-        <td>₹${job.estimatedCost || 0}</td>
-        <td class="btn-actions">
-          <button class="btn btn-sm btn-outline-primary" onclick="openEditModal('${doc.id}')">View/Update</button>
-          <button class="btn btn-sm btn-outline-success" onclick="downloadPdf('${doc.id}')">PDF</button>
-          <button class="btn btn-sm btn-outline-secondary" onclick="printPdf('${doc.id}')">Print</button>
-          <button class="btn btn-sm btn-outline-warning" onclick="startWork('${doc.id}')">${workStarted}</button>
-          <button class="btn btn-sm btn-outline-info" onclick="addParts('${doc.id}')">${partsInfo}</button>
-        </td>
-      </tr>`;
-      tbody.insertAdjacentHTML("beforeend",row);
-    });
-  }, err=>{
-    console.error(err);
-    const tbody = document.getElementById("jobs-table-body");
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error loading jobs.</td></tr>`;
-  });
+  );
 }
 
-// Edit Modal Logic
-window.openEditModal = async function(jobId){
+// --- Edit modal logic ---
+window.openEditModal = async function (jobId) {
   const modalEl = document.getElementById("editJobModal");
   const modal = new bootstrap.Modal(modalEl);
   const docSnap = await getDoc(doc(db, "jobs", jobId));
-  if(!docSnap.exists()){
+  if (!docSnap.exists()) {
     alert("Job not found.");
     return;
   }
@@ -451,6 +561,9 @@ window.openEditModal = async function(jobId){
   document.getElementById("editIssueDescription").value = job.issueDescription || "";
   document.getElementById("editCurrentStatus").value = job.currentStatus || "Received";
   document.getElementById("editEstimatedCost").value = job.estimatedCost || 0;
+
+  setupManagePartsModal(job.parts || []);
+
   modal.show();
 };
 
@@ -458,7 +571,7 @@ document.getElementById("editJobForm").addEventListener("submit", async e => {
   e.preventDefault();
   const jobId = document.getElementById("editJobId").value;
   try {
-    await updateDoc(doc(db,"jobs",jobId),{
+    await updateDoc(doc(db, "jobs", jobId), {
       customerName: document.getElementById("editCustomerName").value.trim(),
       customerMobile: document.getElementById("editCustomerMobile").value.trim(),
       deviceType: document.getElementById("editDeviceType").value,
@@ -470,108 +583,158 @@ document.getElementById("editJobForm").addEventListener("submit", async e => {
     });
     alert("Job updated!");
     bootstrap.Modal.getInstance(document.getElementById("editJobModal")).hide();
-  } catch(err){
-    alert("Update failed: "+err.message);
+  } catch (err) {
+    alert("Update failed: " + err.message);
   }
 });
 
-// PDF generate/download/print Functions
-window.downloadPdf = async (jobId)=>{
-  const docSnap = await getDoc(doc(db,"jobs",jobId));
-  if(!docSnap.exists()){
-    alert("Job not found.");
-    return;
-  }
-  generatePdf(docSnap.data(), docSnap.id);
-};
+// --- Parts management modal (simplified) ---
+function setupManagePartsModal(parts = []) {
+  const partsContainer = document.getElementById("partsContainer");
+  partsContainer.innerHTML = "";
 
-window.printPdf = async (jobId)=>{
-  const docSnap = await getDoc(doc(db,"jobs",jobId));
-  if(!docSnap.exists()){
-    alert("Job not found.");
-    return;
-  }
-  generatePdf(docSnap.data(), docSnap.id, true);
-};
+  parts.forEach((part, i) => {
+    const partRow = document.createElement("div");
+    partRow.classList.add("row", "mb-2");
+    partRow.innerHTML = `
+      <div class="col-6">
+        <input type="text" class="form-control" value="${part.partName}" data-index="${i}" readonly />
+      </div>
+      <div class="col-3">
+        <input type="number" class="form-control" value="${part.quantity}" data-index="${i}" readonly />
+      </div>
+      <div class="col-3">
+        <input type="number" class="form-control" value="${part.price}" data-index="${i}" readonly />
+      </div>
+    `;
+    partsContainer.appendChild(partRow);
+  });
+}
 
-function generatePdf(data, id, print = false){
+document.getElementById("managePartsBtn").addEventListener("click", () => {
+  const jobId = document.getElementById("editJobId").value;
+  const partName = prompt("Enter part name:");
+  if (!partName) return alert("Part name is required.");
+
+  const quantity = parseInt(prompt("Enter quantity:"), 10);
+  if (isNaN(quantity) || quantity <= 0)
+    return alert("Quantity must be a positive number.");
+
+  const price = parseFloat(prompt("Enter price (₹):"));
+  if (isNaN(price) || price < 0) return alert("Price must be a positive number.");
+
+  getDoc(doc(db, "jobs", jobId))
+    .then(docSnap => {
+      const parts = docSnap.data().parts || [];
+      parts.push({ partName, quantity, price });
+      updateDoc(doc(db, "jobs", jobId), { parts })
+        .then(() => {
+          alert("Part added successfully.");
+          setupManagePartsModal(parts);
+        })
+        .catch(err => alert("Failed to add part: " + err.message));
+    })
+    .catch(err => alert("Job not found: " + err.message));
+});
+
+// --- PDF Generation for Unlocking Service ---
+function generateUnlockPdf(data, id) {
   const { jsPDF } = window.jspdf;
-  const pdf = new jsPDF();
+  const pdf = new jsPDF({format:"a4"});
+  const pageWidth = pdf.internal.pageSize.getWidth();
+
+  pdf.setFontSize(16);
+  pdf.text("Declaration for Mobile Unlocking Service", pageWidth/2, 15, {align:"center"});
 
   pdf.setFontSize(12);
-  pdf.text(`Job Card ID: ${id}`, 10, 10);
-  pdf.text(`Shop: ${shopData ? shopData.shopName : ""}`, 10, 20);
-  pdf.text(`Customer Name: ${data.customerName}`, 10, 30);
-  pdf.text(`Mobile: ${data.customerMobile}`, 10, 40);
-  pdf.text(`Device Type: ${data.deviceType}`, 10, 50);
-  pdf.text(`Device Model: ${data.deviceName}`, 10, 60);
-  pdf.text(`IMEI Number: ${data.imeiNumber}`, 10, 70);
-  pdf.text(`Issue Description: ${data.issueDescription}`, 10, 80);
-  pdf.text(`Current Status: ${data.currentStatus}`, 10, 90);
-  pdf.text(`Estimated Cost: ₹${data.estimatedCost || 0}`, 10, 100);
+  pdf.text(`Shop Name: ${shopData.shopName}`, 15, 30);
+  pdf.text(`Shop Address: ${shopData.address || "N/A"}`, 15, 40);
+  pdf.text(`Contact Number: ${shopData.contactNumber || "N/A"}`, 15, 50);
 
-  if(data.parts && data.parts.length){
-    pdf.text("Extra Parts:", 10, 110);
-    data.parts.forEach((part,i)=>{
-      pdf.text(`- ${part.partName} x${part.quantity} at ₹${part.price}`, 20, 120 + i*10);
+  pdf.text("Customer Details:", 15, 65);
+  pdf.text(`Full Name: ${data.customerName}`, 25, 75);
+  pdf.text(`Address: ${data.unlockDetails.address}`, 25, 85);
+  pdf.text(`Phone Number: ${data.customerMobile}`, 25, 95);
+  pdf.text(`ID Type & Number: ${data.unlockDetails.idTypeNumber}`, 25, 105);
+  pdf.text(`Date: ${data.unlockDetails.date}`, 25, 115);
+
+  pdf.text("Brand & Model:", 15, 130);
+  pdf.text(data.deviceName, 40, 130);
+  
+  pdf.text("IMEI Number:", 15, 140);
+  pdf.text(data.imeiNumber, 40, 140);
+
+  pdf.text("Type of Unlocking Required:", 15, 150);
+  const unlockTypes = data.issueDescription.replace("Unlocking Type: ","").split(", ");
+  unlockTypes.forEach((ut,i) => {
+    pdf.text(`- ${ut}`, 25, 160 + i*10);
+  });
+
+  pdf.text("Declaration:", 15, 190);
+  const decl = [
+    "1. This unlocking is being done at my own request and risk.",
+    "2. The Mobile Solution and its technician(s) are not responsible for any data loss, damage, or legal issues.",
+    "3. I confirm that the device is not stolen or involved in any criminal or unlawful activity.",
+    "4. I am submitting a valid ID proof for record and verification purposes."
+  ];
+
+  decl.forEach((line,i) => {
+    pdf.text(line, 25, 200 + i*10);
+  });
+
+  pdf.text("Customer Signature:", 15, 240);
+  pdf.text(data.unlockDetails.signature, 70, 240);
+
+  pdf.text("Powered by RepariFy Web", pageWidth/2, 280, {align: "center", fontSize: 8, fontStyle: "italic"});
+
+  pdf.save(`UnlockingJob_${id}.pdf`);
+}
+
+// --- Print Confirmation ---
+function jobPrintConfirm(newJob){
+  if(confirm("Do you want to print the job card?")){
+    if(newJob.deviceType === "unlocking"){
+      generateUnlockPdf(newJob, "NEW");
+    }else{
+      generateJobPdf(newJob, "NEW");
+    }
+  }
+}
+
+// --- General Job PDF Generator ---
+function generateJobPdf(data, id){
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({format:'a4'});
+  const pageWidth = pdf.internal.pageSize.getWidth();
+
+  pdf.setFontSize(16);
+  pdf.text(`Job Card ID: ${id}`, pageWidth/2, 15, {align:'center'});
+  pdf.text(`Shop: ${shopData.shopName || ''}`, 15, 30);
+
+  pdf.setFontSize(12);
+  pdf.text(`Customer Name: ${data.customerName}`, 15, 40);
+  pdf.text(`Mobile: ${data.customerMobile}`, 15, 50);
+  pdf.text(`Device Type: ${data.deviceType.charAt(0).toUpperCase()+data.deviceType.slice(1)}`, 15, 60);
+  pdf.text(`Device Model: ${data.deviceName}`, 15, 70);
+  pdf.text(`IMEI Number: ${data.imeiNumber || '-'}`, 15, 80);
+  pdf.text(`Issue: ${data.issueDescription}`, 15, 90);
+  pdf.text(`Status: ${data.currentStatus}`, 15, 100);
+  pdf.text(`Estimated Cost: ₹${data.estimatedCost || 0}`, 15, 110);
+
+  if(data.parts && data.parts.length > 0){
+    pdf.text("Extra Parts:", 15, 120);
+    data.parts.forEach((part,i) => {
+      pdf.text(`- ${part.partName} x${part.quantity} @ ₹${part.price}`, 20, 130 + i*10);
     });
   }
 
-  if(print){
-    pdf.autoPrint();
-    pdf.output('dataurlnewwindow');
-  } else {
-    pdf.save(`JobCard_${id}.pdf`);
-  }
+  let datePrinted = new Date().toLocaleDateString();
+  pdf.text(`Printed on: ${datePrinted}`, 15, 170);
+
+  pdf.text("Powered by RepariFy Web", pageWidth/2, 280, {align: "center", fontSize: 8, fontStyle: "italic"});
+
+  pdf.save(`JobCard_${id}.pdf`);
 }
-
-// Work start button opens WhatsApp chat with message
-window.startWork = async (jobId)=>{
-  const docSnap = await getDoc(doc(db,"jobs",jobId));
-  if(!docSnap.exists()){
-    alert("Job not found.");
-    return;
-  }
-  const data = docSnap.data();
-
-  // Update workStartTime
-  await updateDoc(doc(db,"jobs",jobId), { workStartTime: serverTimestamp() });
-
-  // Compose WhatsApp message link
-  const phone = data.customerMobile.replace(/\D/g, '');
-  const msg = encodeURIComponent(`Hello ${data.customerName}, your device (${data.deviceName}, IMEI: ${data.imeiNumber}) repair has started.`);
-  window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
-}
-
-// Add parts prompt & save to Firestore
-window.addParts = async (jobId) => {
-  let partName = prompt("Enter part name:");
-  if(!partName) return alert("Part name required");
-
-  let quantityStr = prompt("Enter quantity (number):");
-  let quantity = parseInt(quantityStr);
-  if(isNaN(quantity) || quantity <= 0) return alert("Valid quantity required");
-
-  let priceStr = prompt("Enter price per piece (₹):");
-  let price = parseFloat(priceStr);
-  if(isNaN(price) || price < 0) return alert("Valid price required");
-
-  const docSnap = await getDoc(doc(db,"jobs",jobId));
-  if(!docSnap.exists()){
-    alert("Job not found");
-    return;
-  }
-  const job = docSnap.data();
-  const parts = job.parts || [];
-  parts.push({ partName, quantity, price });
-
-  try {
-    await updateDoc(doc(db,"jobs",jobId), { parts });
-    alert("Part added successfully");
-  } catch(err){
-    alert("Failed to add part: "+err.message);
-  }
-};
 </script>
 
 </body>
