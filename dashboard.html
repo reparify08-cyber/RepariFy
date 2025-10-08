@@ -1,320 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>RepariFy Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background-color: #f8f9fa;
-      padding-top: 80px;
-      padding-bottom: 50px;
-    }
-    .dashboard-container {
-      max-width: 1200px;
-      margin: auto;
-    }
-    .nav-tabs .nav-link.active {
-      font-weight: 600;
-    }
-    .table-responsive {
-      max-height: 450px;
-      overflow-y: auto;
-    }
-    .btn-actions > button {
-      margin-right: 4px;
-      margin-bottom: 4px;
-    }
-    .service-card {
-        cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-    }
-    .service-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    }
-    .service-card.selected {
-        border: 3px solid #007bff !important;
-        background-color: #e7f0ff;
-    }
-    .logo-preview {
-        max-width: 100px;
-        max-height: 50px;
-        object-fit: contain;
-    }
-    /* FIX: Hide dashboard until data loads to prevent flicker */
-    #main-dashboard-content {
-        display: none;
-    }
-    #loading-screen {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #fff;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        z-index: 10000;
-    }
-    .report-card {
-        border-left: 5px solid #0d6efd;
-    }
-    .search-bar-container {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 15px;
-    }
-    .footer-disclaimer {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: #f8d7da;
-        color: #721c24;
-        text-align: center;
-        padding: 5px 10px;
-        font-size: 10px;
-        z-index: 9999;
-    }
-    .imei-verification-box {
-        border: 2px solid #ffc107;
-        padding: 15px;
-        margin-bottom: 20px;
-        background-color: #fff3cd;
-    }
-  </style>
+    <meta charset="UTF-8" />
+    <title>RepariFy Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; padding-bottom: 90px; }
+        .dashboard-container { max-width: 1200px; margin: auto; }
+        .nav-tabs .nav-link.active { font-weight: 600; }
+        .table-responsive { max-height: 450px; overflow-y: auto; }
+        .btn-actions > button { margin-right: 4px; margin-bottom: 4px; }
+        .footer-disclaimer { position: fixed; bottom: 0; left: 0; width: 100%; background-color: #f8d7da; color: #721c24; text-align: center; padding: 5px 10px; font-size: 12px; z-index: 99; }
+        .powered-by { font-size: 10px; color: #888; text-align: center; margin-top: 50px; }
+    </style>
 </head>
 <body>
-<div id="loading-screen">
-    <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-    <p class="mt-2 text-muted">Checking authentication and loading shop data...</p>
-</div>
-
-<div id="main-dashboard-content">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container-fluid d-flex justify-content-between">
-    <a class="navbar-brand" href="#">
-        <input type="file" id="logoFileInput" style="display:none;" accept="image/*" />
-        <img id="navLogo" src="" alt="Shop Logo" class="logo-preview me-2" style="display:none;"/> 
-        <span id="navShopName">RepariFy Dashboard</span>
-    </a>
-    <div>
-        <button id="logoUploadBtn" class="btn btn-outline-info btn-sm me-2" data-bs-toggle="modal" data-bs-target="#logoModal">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cloud-upload" viewBox="0 0 16 16">
-              <path fill-rule="evenodd" d="M12.735 6.255a.5.5 0 0 1-.5.5H11a.5.5 0 0 1-.447-.276L9.5 3.5a.5.5 0 0 1 .447-.724h.789a.5.5 0 0 1 .447.276L11.5 5.5a.5.5 0 0 1 .185.345.5.5 0 0 1 .046.01.5.5 0 0 1 .054.39"/>
-              <path d="M4.406 1.394A5.5 5.5 0 0 1 13.993 4.5h-.005a.5.5 0 0 0 .5.5.5.5 0 0 1 .035.006.5.5 0 0 0 .146.046 6.507 6.507 0 0 0 1.258.118A6.5 6.5 0 0 0 0 6.03a.5.5 0 0 0 .5.495A5.5 5.5 0 0 1 12.735 6.255Z"/>
-            </svg> Logo
-        </button>
-        <button id="logoutBtn" class="btn btn-outline-light btn-sm">Logout</button>
-    </div>
+    <a class="navbar-brand" href="#">RepariFy Dashboard</a>
+    <button id="logoutBtn" class="btn btn-outline-light btn-sm">Logout</button>
   </div>
 </nav>
 
 <div class="container dashboard-container mt-3">
   <ul class="nav nav-tabs" id="dashboardTabs" role="tablist">
     <li class="nav-item" role="presentation">
-      <button class="nav-link active" id="mobile-tab" data-bs-toggle="tab" data-bs-target="#mobile" type="button" role="tab" aria-controls="mobile" aria-selected="true">Mobile Repair</button>
+      <button class="nav-link active" id="mobile-tab" data-bs-toggle="tab" data-bs-target="#mobile" type="button" role="tab">Mobile Repair</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="computer-tab" data-bs-toggle="tab" data-bs-target="#computer" type="button" role="tab" aria-controls="computer" aria-selected="false">Computer Repair</button>
+      <button class="nav-link" id="computer-tab" data-bs-toggle="tab" data-bs-target="#computer" type="button" role="tab">Computer Repair</button>
     </li>
     <li class="nav-item" role="presentation">
-      <button class="nav-link" id="unlocking-legal-tab" data-bs-toggle="tab" data-bs-target="#unlocking-legal" type="button" role="tab" aria-controls="unlocking-legal" aria-selected="false">Unlocking Legal Terms</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="unlocking-online-tab" data-bs-toggle="tab" data-bs-target="#unlocking-online" type="button" role="tab" aria-controls="unlocking-online" aria-selected="false">Online Unlocking Order</button>
-    </li>
-    <li class="nav-item" role="presentation">
-      <button class="nav-link" id="daily-report-tab" data-bs-toggle="tab" data-bs-target="#daily-report" type="button" role="tab" aria-controls="daily-report" aria-selected="false">Daily Report</button>
+      <button class="nav-link" id="unlocking-tab" data-bs-toggle="tab" data-bs-target="#unlocking" type="button" role="tab">Unlocking Declaration</button>
     </li>
   </ul>
-
   <div class="tab-content mt-3">
+    <!-- Mobile Repair Tab -->
     <div class="tab-pane fade show active" id="mobile" role="tabpanel" aria-labelledby="mobile-tab">
       <h4>New Mobile Repair Job</h4>
       <form id="mobileJobForm">
-        <div class="mb-3"><input type="text" id="mCustomerName" class="form-control" placeholder="Customer Name" required /></div>
-        <div class="mb-3"><input type="tel" id="mCustomerMobile" class="form-control" placeholder="Mobile No (WhatsApp)" required /></div>
-        <div class="mb-3"><input type="text" id="mDeviceModel" class="form-control" placeholder="Device Model (e.g. Samsung A50)" required /></div>
-        <div class="mb-3"><input type="text" id="mImei" class="form-control" placeholder="IMEI Number (15 digits)" maxlength="15" /></div>
-        <div class="mb-3"><textarea id="mIssueDesc" class="form-control" placeholder="Issue Description" rows="2" required></textarea></div>
-        <div class="mb-3"><input type="number" id="mEstimatePrice" class="form-control" placeholder="Estimate Repair Price (₹)" value="0" min="0" /></div>
-        
+        <div class="mb-3">
+          <input type="text" id="mCustomerName" class="form-control" placeholder="Customer Name" required />
+        </div>
+        <div class="mb-3">
+          <input type="tel" id="mCustomerMobile" class="form-control" placeholder="Mobile No (WhatsApp)" required />
+        </div>
+        <div class="mb-3">
+          <input type="text" id="mDeviceModel" class="form-control" placeholder="Device Model" required />
+        </div>
+        <div class="mb-3">
+          <input type="text" id="mImei" class="form-control" placeholder="IMEI Number (15 digits)" maxlength="15" required />
+        </div>
+        <div class="mb-3">
+          <textarea id="mIssueDesc" class="form-control" placeholder="Issue Description" rows="2" required></textarea>
+        </div>
+        <div class="mb-3">
+          <input type="number" id="mEstimatePrice" class="form-control" placeholder="Estimate Repair Price (₹)" min="0" value="0" required />
+        </div>
         <button type="submit" class="btn btn-primary w-100">Create Mobile Job & Generate Bill</button>
       </form>
     </div>
-
+    <!-- Computer Repair Tab -->
     <div class="tab-pane fade" id="computer" role="tabpanel" aria-labelledby="computer-tab">
       <h4>New Computer Repair Job</h4>
       <form id="computerJobForm">
-        <div class="mb-3"><input type="text" id="cCustomerName" class="form-control" placeholder="Customer Name" required /></div>
-        <div class="mb-3"><input type="tel" id="cCustomerMobile" class="form-control" placeholder="Mobile No (WhatsApp)" required /></div>
         <div class="mb-3">
-          <select id="cDeviceBrand" class="form-select" required>
-            <option value="" disabled selected>Select Brand</option>
-            <option value="Dell">Dell</option>
-            <option value="HP">HP</option>
-            <option value="Lenovo">Lenovo</option>
-            <option value="Acer">Acer</option>
-            <option value="Asus">Asus</option>
-            <option value="Apple">Apple</option>
-            <option value="Other">Other</option>
-          </select>
+          <input type="text" id="cCustomerName" class="form-control" placeholder="Customer Name" required />
         </div>
-        <div class="mb-3"><input type="text" id="cDeviceModel" class="form-control" placeholder="Model Number" required /></div>
-        <div class="mb-3"><textarea id="cIssueDesc" class="form-control" placeholder="Issue Description" rows="2" required></textarea></div>
-        <div class="mb-3"><input type="number" id="cEstimatePrice" class="form-control" placeholder="Estimate Repair Price (₹)" value="0" min="0" /></div>
-        
+        <div class="mb-3">
+          <input type="tel" id="cCustomerMobile" class="form-control" placeholder="Mobile No (WhatsApp)" required />
+        </div>
+        <div class="mb-3">
+          <input type="text" id="cDeviceBrand" class="form-control" placeholder="Device Brand (e.g. Dell, HP)" required />
+        </div>
+        <div class="mb-3">
+          <input type="text" id="cDeviceModel" class="form-control" placeholder="Model Number" required />
+        </div>
+        <div class="mb-3">
+          <textarea id="cIssueDesc" class="form-control" placeholder="Issue Description" rows="2" required></textarea>
+        </div>
+        <div class="mb-3">
+          <input type="number" id="cEstimatePrice" class="form-control" placeholder="Estimate Repair Price (₹)" min="0" value="0" required />
+        </div>
         <button type="submit" class="btn btn-primary w-100">Create Computer Job & Generate Bill</button>
       </form>
     </div>
-
-    <div class="tab-pane fade" id="unlocking-legal" role="tabpanel" aria-labelledby="unlocking-legal-tab">
-      <h4>Generate Legal Declaration for Unlocking</h4>
-      <div class="alert alert-warning">
-          **Shop Details:** <span id="unlockShopNameLegal" class="fw-bold">...</span> | **Contact:** <span id="unlockShopContactLegal">...</span>
-      </div>
-      
-      <div class="imei-verification-box">
-          <h5 class="text-danger fw-bold">🚨 Mandatory IMEI Verification Before Unlocking</h5>
-          <p class="small mb-2">Before proceeding with any mobile unlocking service, it is **MANDATORY** to verify the device's legal status. Use the official CEIR portal to check if the IMEI is blacklisted or involved in any legal dispute.</p>
-          <div class="input-group">
-            <input type="text" id="ceirImeiNumber" class="form-control" placeholder="Enter 15-digit IMEI" maxlength="15" />
-            <button class="btn btn-warning" type="button" onclick="redirectToCeir()">Check IMEI & Status</button>
-          </div>
-      </div>
-      
-      <form id="legalDeclarationForm">
-        <div class="row g-3">
-            <div class="col-md-6"><label class="form-label">Brand & Model:</label><input type="text" id="ulBrandModel" class="form-control" required /></div>
-            <div class="col-md-6"><label class="form-label">IMEI Number:</label><input type="text" id="ulImei" class="form-control" pattern="\d{15}" maxlength="15" required /></div>
-            <div class="col-12">
-                <label class="form-label">Type of Unlocking Required:</label>
-                <div class="form-check"><input class="form-check-input" type="checkbox" id="ulPin" checked /><label class="form-check-label" for="ulPin">Pattern/PIN Unlock</label></div>
-                <div class="form-check"><input class="form-check-input" type="checkbox" id="ulFrp" /><label class="form-check-label" for="ulFrp">FRP (Google Account) Unlock</label></div>
-                <div class="form-check"><input class="form-check-input" type="checkbox" id="ulNetwork" /><label class="form-check-label" for="ulNetwork">Network Unlock</label></div>
-                <div class="form-check"><input class="form-check-input" type="checkbox" id="ulOthers" /><label class="form-check-label" for="ulOthers">Others</label></div>
-            </div>
-            <hr class="mt-4"/>
-            <h5 class="col-12">Customer Details (For Legal Record)</h5>
-            <div class="col-md-6"><label class="form-label">Full Name:</label><input type="text" id="ulFullName" class="form-control" required /></div>
-            <div class="col-md-6"><label class="form-label">Phone Number:</label><input type="tel" id="ulPhoneNumber" class="form-control" required /></div>
-            <div class="col-md-6"><label class="form-label">ID Type & Number (Aadhaar/Voter/etc.):</label><input type="text" id="ulIdTypeNumber" class="form-control" required /></div>
-            <div class="col-md-6"><label class="form-label">Date:</label><input type="date" id="ulDate" class="form-control" required /></div>
-            <div class="col-12"><label class="form-label">Address:</label><textarea id="ulAddress" class="form-control" rows="2" required></textarea></div>
+    <!-- Unlocking Declaration Tab -->
+    <div class="tab-pane fade" id="unlocking" role="tabpanel" aria-labelledby="unlocking-tab">
+      <h4>Mobile Unlocking Service Declaration</h4>
+      <form id="unlockingForm">
+        <div class="mb-2">
+          <label>Shop Name: <span id="unlockShopName" class="fw-bold"></span></label>
         </div>
-        <button type="submit" class="btn btn-danger w-100 mt-4">Save Record & Generate Legal Declaration PDF</button>
+        <div class="mb-3">
+          <label>Shop Address: <span id="unlockShopAddress"></span></label>
+        </div>
+        <div class="mb-3">
+          <label>Contact Number: <span id="unlockShopContact"></span></label>
+        </div>
+        <div class="mb-3">
+          <label>Brand & Model:</label>
+          <input type="text" id="uBrandModel" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label>IMEI Number:</label>
+          <input type="text" id="uImei" class="form-control" maxlength="15" required />
+        </div>
+        <label>Type of Unlocking Required:</label>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="unlockPin" />
+          <label class="form-check-label" for="unlockPin">Pattern/PIN Unlock</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="unlockFrp" />
+          <label class="form-check-label" for="unlockFrp">FRP (Google Account) Unlock</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="unlockNetwork" />
+          <label class="form-check-label" for="unlockNetwork">Network Unlock</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="unlockOthers" />
+          <label class="form-check-label" for="unlockOthers">Others</label>
+        </div>
+        <div class="mb-3 mt-3">
+          <label>Full Name:</label>
+          <input type="text" id="uFullName" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label>Address:</label>
+          <textarea id="uAddress" class="form-control" rows="2" required></textarea>
+        </div>
+        <div class="mb-3">
+          <label>Phone Number:</label>
+          <input type="tel" id="uPhoneNumber" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label>ID Type & Number:</label>
+          <input type="text" id="uIdTypeNumber" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label>Date:</label>
+          <input type="date" id="uDate" class="form-control" required />
+        </div>
+        <div class="mb-3">
+          <label>Customer Signature (Enter Name):</label>
+          <input type="text" id="uCustomerSignature" class="form-control" required />
+        </div>
+        <button type="submit" class="btn btn-danger w-100">Create Unlocking Declaration & Generate PDF</button>
       </form>
     </div>
-
-    <div class="tab-pane fade" id="unlocking-online" role="tabpanel" aria-labelledby="unlocking-online-tab">
-      <h4 class="mb-4">Order Online Unlocking Service</h4>
-      
-      <div class="alert alert-info" role="alert">
-          **Your Shop:** <span id="unlockShopNameOnline" class="fw-bold">...</span> | **Contact:** <span id="unlockShopContactOnline">...</span>
-      </div>
-
-      <div class="row">
-          <div class="col-md-5">
-              <h5>1. Select Service (Rates set by Admin)</h5>
-              <div id="unlocking-services-list" class="row g-3 mb-4"><p class="text-muted">Loading available services...</p></div>
-          </div>
-          <div class="col-md-7 border-start">
-              <h5>2. Fill Device Details & Order</h5>
-              <form id="unlockingOrderForm">
-                  <input type="hidden" id="serviceId" required />
-                  <input type="hidden" id="servicePrice" required />
-
-                  <div class="mb-3"><label class="form-label">Customer Name</label><input type="text" id="uCustomerName" class="form-control" required /></div>
-                  <div class="mb-3"><label class="form-label">Customer Mobile (WhatsApp)</label><input type="tel" id="uCustomerMobile" class="form-control" required /></div>
-                  <div class="mb-3"><label class="form-label">Brand & Model</label><input type="text" id="uBrandModel" class="form-control" required /></div>
-                  <div class="mb-3"><label class="form-label">IMEI Number</label><input type="text" id="uImei" class="form-control" pattern="\d{15}" maxlength="15" required /></div>
-                  <div class="mb-3">
-                      <label class="form-label">Selected Service:</label>
-                      <p class="fw-bold text-primary" id="selectedServiceName">None Selected</p>
-                      <p class="fw-bold text-success">Price: ₹<span id="displayServicePrice">0</span></p>
-                  </div>
-                  
-                  <button type="submit" class="btn btn-success w-100" id="orderUnlockBtn" disabled>Place Order</button>
-                  <p class="text-danger mt-2" id="orderErrorMsg"></p>
-              </form>
-          </div>
-      </div>
-    </div>
-    
-    <div class="tab-pane fade" id="daily-report" role="tabpanel" aria-labelledby="daily-report-tab">
-        <h4>Daily Delivery & Income Report 📈</h4>
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label for="reportDate" class="form-label">Select Date:</label>
-                <input type="date" id="reportDate" class="form-control" required />
-            </div>
-            <div class="col-md-4 d-flex align-items-end">
-                <button id="generateReportBtn" class="btn btn-info w-100">Generate Report</button>
-            </div>
-        </div>
-        <div id="reportSummary" class="mt-4 row g-3" style="display:none;">
-            <h5 class="text-primary col-12">Summary for <span id="summaryDate"></span></h5>
-            <div class="col-md-6 mb-2">
-                <div class="card bg-light p-3 report-card">
-                    Total Delivered Jobs: <span class="fw-bold text-success fs-4" id="totalDelivered">0</span>
-                </div>
-            </div>
-            <div class="col-md-6 mb-2">
-                <div class="card bg-light p-3 report-card">
-                    Total Income: <span class="fw-bold text-success fs-4" id="totalIncome">₹0</span>
-                </div>
-            </div>
-            <div class="col-12 mt-3">
-                <p class="mb-1">Mobile Delivered: <span class="fw-bold" id="mobileDelivered">0</span></p>
-                <p>Computer Delivered: <span class="fw-bold" id="computerDelivered">0</span></p>
-            </div>
-        </div>
-        <div class="table-responsive mt-3">
-            <table class="table table-striped table-hover" id="reportTable">
-                <thead>
-                    <tr class="bg-secondary text-white">
-                        <th>Job ID</th>
-                        <th>Device Type</th>
-                        <th>Customer Name</th>
-                        <th>Final Cost (₹)</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody id="report-table-body">
-                    <tr><td colspan="5" class="text-center text-muted">Select a date and generate the report.</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
   </div>
 
-  <h4 class="mt-4">Recent Jobs (Repair) / IMEI Search Results</h4>
-  <div class="search-bar-container">
-    <input type="text" id="imeiSearchInput" class="form-control" placeholder="Search by IMEI Number (15 digits)" maxlength="15" />
-    <button id="imeiSearchBtn" class="btn btn-primary">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
-    </button>
-  </div>
-
+  <!-- Recent Jobs Table -->
+  <h4 class="mt-4">Recent Jobs / Search By IMEI</h4>
   <div class="table-responsive">
     <table class="table table-striped table-hover" id="jobsTable">
       <thead>
-        <tr class="bg-light">
+        <tr>
           <th>Job ID</th>
           <th>Device Type</th>
           <th>Customer Name</th>
           <th>Mobile No.</th>
           <th>Device Model</th>
-          <th>Estimate Price (₹)</th>
+          <th>Estimate (₹)</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -324,53 +177,13 @@
       </tbody>
     </table>
   </div>
-  
-  <h4 class="mt-4">IMEI History (Legal Declarations)</h4>
-  <div class="table-responsive">
-    <table class="table table-striped table-hover" id="legalHistoryTable">
-      <thead>
-        <tr class="bg-warning text-dark">
-          <th>IMEI</th>
-          <th>Customer Name</th>
-          <th>ID Number</th>
-          <th>Unlocking Types</th>
-          <th>Date</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="legal-history-table-body">
-        <tr><td colspan="6" class="text-center text-muted">Use the search bar above to check legal declaration history for a specific IMEI.</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-
-  <h4 class="mt-4">Recent Unlocking Orders (Online)</h4>
-  <div class="table-responsive">
-    <table class="table table-striped table-hover" id="unlockOrdersTable">
-      <thead>
-        <tr class="bg-info text-white">
-          <th>Order ID</th>
-          <th>Service Name</th>
-          <th>Device Model</th>
-          <th>Customer Price (₹)</th>
-          <th>Tech Name</th>
-          <th>Status</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody id="unlock-orders-table-body">
-        <tr><td colspan="7" class="text-center text-muted">No recent unlocking orders found.</td></tr>
-      </tbody>
-    </table>
-  </div>
 </div>
-</div>
-
 <div class="footer-disclaimer">
-    ***IMPORTANT LEGAL DISCLAIMER:*** Any unauthorized unlocking performed without verifying the IMEI (using CEIR), or without collecting the customer's legal documents (Original Bill/Aadhaar), is the sole responsibility of the shop owner, and not the platform.
+    ***IMPORTANT: Any unauthorized unlocking, or billing, is the sole responsibility of the shop owner, not the platform.***
 </div>
+<div class="powered-by">Powered by reparify.com</div>
 
+<!-- Modal: Edit Job -->
 <div class="modal fade" id="editJobModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <form class="modal-content" id="editJobForm">
@@ -380,42 +193,24 @@
       </div>
       <div class="modal-body">
         <input type="hidden" id="editJobId" />
-        <div class="row mb-3">
-          <div class="col-md-4"><label for="editDeviceType" class="form-label">Device Type</label><input type="text" id="editDeviceType" class="form-control" readonly /></div>
-          <div class="col-md-8"><label for="editDeviceName" class="form-label">Device Model</label><input type="text" id="editDeviceName" class="form-control" required /></div>
-        </div>
-        <div class="mb-3"><label for="editIssueDescription" class="form-label">Issue Description</label><textarea id="editIssueDescription" class="form-control" rows="2" required></textarea></div>
-        
-        <div class="row mb-3">
-            <div class="col-md-4">
-                <label for="editEstimatePrice" class="form-label">Initial Estimate (₹)</label>
-                <input type="number" id="editEstimatePrice" class="form-control" value="0" min="0" readonly />
-            </div>
-            <div class="col-md-4">
-                <label for="editServiceCharge" class="form-label">Final Service Charge (₹)</label>
-                <input type="number" id="editServiceCharge" class="form-control" value="0" min="0" />
-            </div>
-            <div class="col-md-4">
-                <label for="editPaidAmount" class="form-label">Amount Paid (₹)</label>
-                <input type="number" id="editPaidAmount" class="form-control" value="0" min="0" />
-            </div>
-        </div>
-        
-        <div class="mb-3">
-            <label for="editCurrentStatus" class="form-label">Current Status</label>
+        <div class="mb-3"><label>Device Type</label><input type="text" id="editDeviceType" class="form-control" readonly /></div>
+        <div class="mb-3"><label>Device Model</label><input type="text" id="editDeviceName" class="form-control" required /></div>
+        <div class="mb-3"><label>Issue</label><textarea id="editIssueDescription" class="form-control" rows="2" required></textarea></div>
+        <div class="mb-3"><label>Estimate (₹)</label><input type="number" id="editEstimatePrice" class="form-control" min="0" readonly /></div>
+        <div class="mb-3"><label>Service Charge (₹)</label><input type="number" id="editServiceCharge" class="form-control" min="0" value="0" /></div>
+        <div class="mb-3"><label>Amount Paid (₹)</label><input type="number" id="editPaidAmount" class="form-control" min="0" value="0" /></div>
+        <div class="mb-3"><label>Status</label>
             <select id="editCurrentStatus" class="form-select" required>
-                <option value="Received">Received for Inspection</option>
-                <option value="InProgress">Repair In Progress</option>
-                <option value="PartsWaiting">Waiting for Parts</option>
-                <option value="Ready">Ready for Delivery</option>
+                <option value="Received">Received</option>
+                <option value="InProgress">In Progress</option>
+                <option value="PartsWaiting">Parts Waiting</option>
+                <option value="Ready">Ready</option>
                 <option value="Delivered">Delivered</option>
-                <option value="NotRepaired">Not Repaired (Unfixable)</option>
+                <option value="NotRepaired">Not Repaired</option>
             </select>
         </div>
-        
-        <hr/>
         <div class="mb-3 d-flex justify-content-between align-items-center">
-            <h6>Parts Used (Final Bill Items)</h6>
+            <h6>Parts Used (Final Bill)</h6>
             <button type="button" class="btn btn-outline-info btn-sm" id="managePartsBtn" data-bs-toggle="modal" data-bs-target="#partsModal">Add/View Parts</button>
         </div>
         <div id="partsContainer" class="border p-2 rounded"></div>
@@ -427,7 +222,7 @@
     </form>
   </div>
 </div>
-
+<!-- Modal: Manage Parts -->
 <div class="modal fade" id="partsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -452,1218 +247,10 @@
         </div>
     </div>
 </div>
-
-<div class="modal fade" id="printOptionsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Bill Options (Job ID: <span id="printJobIdDisplay"></span>)</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center">
-                <button class="btn btn-success w-100 mb-2" id="whatsappShareBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-whatsapp me-2" viewBox="0 0 16 16"><path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.334.068 7.318c0 1.258.397 2.448 1.107 3.497l-.027.054-1.05 3.524a.5.5 0 0 0 .548.641l3.523-1.05a7.9 7.9 0 0 0 3.498 1.107h.001c4.366 0 7.925-3.334 7.925-7.318 0-1.859-.72-3.56-1.92-4.872zm-1.868 1.638a6.837 6.837 0 0 1-.508.83 5.487 5.487 0 0 1-1.127 1.116l-.28.243-.01.01-.158.134c-.23.197-.47.375-.72.53a5.57 5.57 0 0 1-.806.495 2.11 2.11 0 0 1-.74.155c-.218 0-.435-.044-.64-.132a.58.58 0 0 1-.22-.198.54.54 0 0 1-.087-.311c0-.12.03-.23.09-.33s.145-.18.256-.27c.112-.09.24-.17.38-.24s.28-.13.43-.16.29-.02.43 0l.27.05.29.08.31.13c.12.06.23.15.34.25s.19.2.25.32c.07.12.11.25.12.39s.02.28 0 .42a.5.5 0 0 1-.09.33c-.06.09-.13.16-.22.22a.58.58 0 0 1-.3.12c-.1.01-.2 0-.3-.02a.85.85 0 0 1-.36-.14c-.11-.07-.22-.15-.34-.23a4.07 4.07 0 0 1-.53-.44 4.8 4.8 0 0 1-.5-.54 2.8 2.8 0 0 1-.39-.42 1.4 1.4 0 0 1-.18-.32 1.05 1.05 0 0 1-.04-.32.74.74 0 0 1 .1-.33c.06-.09.13-.15.2-.2s.14-.11.2-.14.12-.05.18-.05h.06c.15 0 .28.05.4.15s.21.2.29.35c.07.15.11.3.11.47a.78.78 0 0 1-.04.28c-.01.09-.03.17-.06.25a.8.8 0 0 1-.1.22c-.06.09-.12.16-.19.22a.66.66 0 0 0-.25.26.5.5 0 0 0-.08.28c.01.08.04.16.09.23.06.07.13.13.2.18s.16.08.25.1a.84.84 0 0 0 .42-.01c.11-.03.22-.08.32-.16s.19-.18.27-.3c.07-.11.13-.24.18-.38.05-.15.08-.31.08-.48z"/></svg>
-                    Share on WhatsApp
-                </button>
-                <button class="btn btn-primary w-100 mb-2" id="printBillBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer me-2" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1H1V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3h-1.5a.5.5 0 0 0 0 1H15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h1.5zm.797 8a1.5 1.5 0 0 0 1.5-1.5h6a1.5 1.5 0 0 0 1.5 1.5H3.297zm11.203-3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1.5a.5.5 0 0 0 0 1h1.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H2.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 0 0-1H1a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h14zm-4-4a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
-                    Print Bill
-                </button>
-                <button class="btn btn-secondary w-100" id="savePdfBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download me-2" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
-                    Save as PDF
-                </button>
-            </div>
-            <input type="hidden" id="pdfDataURI" />
-            <input type="hidden" id="whatsappMobileNo" />
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="legalPrintOptionsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-sm modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Legal Declaration Options</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center">
-                <p class="text-muted small">IMEI: <span id="legalImeiDisplay" class="fw-bold"></span></p>
-                <button class="btn btn-danger w-100 mb-2" id="legalPrintBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer me-2" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1H1V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v3h-1.5a.5.5 0 0 0 0 1H15a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h1.5zm.797 8a1.5 1.5 0 0 0 1.5-1.5h6a1.5 1.5 0 0 0 1.5 1.5H3.297zm11.203-3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-1.5a.5.5 0 0 0 0 1h1.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H2.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5h1.5a.5.5 0 0 0 0-1H1a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h14zm-4-4a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0z"/></svg>
-                    Re-Generate & Print PDF
-                </button>
-                <button class="btn btn-secondary w-100" id="legalSavePdfBtn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download me-2" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>
-                    Save as PDF
-                </button>
-            </div>
-            <input type="hidden" id="legalPdfDataURI" />
-            <input type="hidden" id="legalPdfData" />
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="logoModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Upload Shop Logo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Upload a clear logo (JPG/PNG). This will appear on all bills.</p>
-                <input type="file" id="logoUploadInput" class="form-control mb-3" accept="image/jpeg,image/png" required />
-                <button id="uploadLogoConfirmBtn" class="btn btn-success w-100">Upload Logo</button>
-                <div class="mt-3 text-center" id="logoUploadStatus"></div>
-                <div class="mt-3 text-center">
-                    <img id="currentLogoPreview" src="" alt="Current Logo" class="logo-preview" style="display:none;"/>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
+<!-- Required CDN JS & Your dashboard.js -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-import {
-  getFirestore,
-  collection,
-  addDoc,
-  onSnapshot,
-  doc,
-  getDoc,
-  query,
-  where,
-  limit,
-  updateDoc,
-  serverTimestamp,
-  getDocs,
-  orderBy,
-  deleteDoc
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-storage.js";
-
-// !!! Replace with your Firebase config !!!
-const firebaseConfig = {
-  apiKey: "AIzaSyDBCalxCVKnVERmpLnnCjT0X9Basy3uw7o",
-  authDomain: "reparify-4db99.firebaseapp.com",
-  projectId: "reparify-4db99",
-  storageBucket: "reparify-4db99.appspot.com",
-  messagingSenderId: "1039139563247",
-  appId: "1:1039139563247:web:b93c63206f03433de11d1a",
-  measurementId: "G-QP5QS2WJJX"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
-const db = getFirestore();
-const storage = getStorage(app);
-
-let currentUserId = null;
-let shopData = null;
-let activeJobs = {}; // Store job data temporarily for edit/print
-let currentJobsListener = null;
-
-// --- Core Auth Logic (FIX: Improved Authorization Flow) ---
-onAuthStateChanged(auth, async user => {
-  const loadingScreen = document.getElementById("loading-screen");
-  const mainContent = document.getElementById("main-dashboard-content");
-
-  if (user) {
-    currentUserId = user.uid;
-    try {
-      const docSnap = await getDoc(doc(db, "shops", currentUserId));
-      if (docSnap.exists() && docSnap.data().isApproved) {
-        shopData = docSnap.data();
-        
-        // **IMPORTANT:** Define the Live Stream Domain here. (REPLACE with your actual domain)
-        shopData.liveStreamDomain = shopData.liveStreamDomain || "https://your-domain.com"; 
-        
-        document.title = `Dashboard - ${shopData.shopName}`;
-        
-        // Initialize UI components after data is safely loaded
-        listenForJobs(); 
-        listenForUnlockRates();
-        listenForUnlockOrders();
-        fillShopDetails();
-        setupLogoPreview();
-        setupReportDate();
-        setupSearchLogic(); 
-
-        // Show main content and hide loading screen
-        mainContent.style.display = 'block';
-        loadingScreen.style.display = 'none';
-
-      } else {
-        alert("Access denied, your shop is not approved or access has been revoked.");
-        await signOut(auth);
-        window.location.href = "login.html";
-      }
-    } catch (err) {
-      console.error("Shop data loading error (Auth problem):", err);
-      // Ensure immediate logout on data load error
-      await signOut(auth);
-      window.location.href = "login.html";
-    }
-  } else {
-    // If user logs out or not authenticated, redirect to login
-    loadingScreen.style.display = 'none'; 
-    window.location.href = "login.html";
-  }
-});
-
-// --- General Event Listeners ---
-document.getElementById("logoutBtn").addEventListener("click", () =>
-  signOut(auth).then(() => {
-    window.location.href = "login.html";
-  })
-);
-
-document.getElementById("mobileJobForm").addEventListener("submit", e => {
-  e.preventDefault();
-  createJob("mobile");
-});
-
-document.getElementById("computerJobForm").addEventListener("submit", e => {
-  e.preventDefault();
-  createJob("computer");
-});
-
-document.getElementById("legalDeclarationForm").addEventListener("submit", e => {
-    e.preventDefault();
-    saveLegalDeclaration();
-});
-
-// --- Logo Upload Logic (FIX: Restored) ---
-document.getElementById('uploadLogoConfirmBtn').addEventListener('click', uploadLogo);
-async function uploadLogo() {
-    const file = document.getElementById('logoUploadInput').files[0];
-    const statusDiv = document.getElementById('logoUploadStatus');
-    
-    if (!file) {
-        statusDiv.innerHTML = '<span class="text-danger">Please select a file.</span>';
-        return;
-    }
-
-    statusDiv.innerHTML = '<span class="text-info">Uploading...</span>';
-
-    try {
-        const logoRef = storageRef(storage, `shop_logos/${currentUserId}/${file.name}`);
-        const snapshot = await uploadBytes(logoRef, file);
-        const downloadURL = await getDownloadURL(snapshot.ref);
-
-        // Update shop profile with the new logo URL
-        await updateDoc(doc(db, "shops", currentUserId), {
-            logoURL: downloadURL
-        });
-
-        shopData.logoURL = downloadURL; // Update local data
-        setupLogoPreview(); 
-
-        statusDiv.innerHTML = '<span class="text-success">Logo uploaded and saved successfully!</span>';
-        setTimeout(() => {
-            const modalEl = document.getElementById('logoModal');
-            const modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
-        }, 1500);
-
-    } catch (error) {
-        console.error("Error uploading logo:", error);
-        statusDiv.innerHTML = `<span class="text-danger">Upload failed: ${error.message}</span>`;
-    }
-}
-
-function setupLogoPreview() {
-    const navLogo = document.getElementById('navLogo');
-    const currentLogoPreview = document.getElementById('currentLogoPreview');
-    if (shopData && shopData.logoURL) {
-        navLogo.src = shopData.logoURL;
-        navLogo.style.display = 'inline';
-        currentLogoPreview.src = shopData.logoURL;
-        currentLogoPreview.style.display = 'block';
-    } else {
-        navLogo.style.display = 'none';
-        currentLogoPreview.style.display = 'none';
-    }
-}
-
-// --- Utility: Fill Shop Details ---
-function fillShopDetails() {
-    if (!shopData) return;
-    document.getElementById("navShopName").textContent = shopData.shopName || "RepariFy Dashboard";
-    
-    // Legal tab details
-    document.getElementById("unlockShopNameLegal").textContent = shopData.shopName || "N/A";
-    document.getElementById("unlockShopContactLegal").textContent = shopData.mobileNo || "N/A";
-
-    // Online Unlock tab details
-    document.getElementById("unlockShopNameOnline").textContent = shopData.shopName || "N/A";
-    document.getElementById("unlockShopContactOnline").textContent = shopData.mobileNo || "N/A";
-}
-
-
-// --- Create Job (FIX: Ensured proper data structure for recent job load) ---
-async function createJob(type) {
-  if (!currentUserId || !shopData) {
-    alert("User data missing, please refresh.");
-    return;
-  }
-  const formId = type === "mobile" ? "mobileJobForm" : "computerJobForm";
-  const form = document.getElementById(formId);
-  const isMobile = type === "mobile";
-
-  const newJob = {
-    customerName: form.querySelector(`input[id$='CustomerName']`).value.trim(),
-    customerMobile: form.querySelector(`input[id$='CustomerMobile']`).value.trim(),
-    deviceType: type,
-    deviceName: form.querySelector(isMobile ? "#mDeviceModel" : "#cDeviceModel").value.trim(),
-    imeiNumber: isMobile ? form.querySelector("#mImei").value.trim().toUpperCase() : "", 
-    issueDescription: form.querySelector("textarea").value.trim(),
-    estimatePrice: parseFloat(form.querySelector(isMobile ? "#mEstimatePrice" : "#cEstimatePrice").value) || 0,
-    currentStatus: "Received",
-    serviceCharge: 0, 
-    paidAmount: 0, // FIX: Added paid amount field
-    receivedOn: serverTimestamp(),
-    deliveryDate: null, 
-    shopId: currentUserId,
-    shopName: shopData.shopName || "",
-    parts: [], // FIX: Ensure parts array is initialized
-  };
-
-  try {
-    const docRef = await addDoc(collection(db, "jobs"), newJob);
-    alert("Job card created successfully!");
-    jobPrintConfirm(newJob, docRef.id); 
-    form.reset();
-  } catch (err) {
-    alert("Failed to create job card! Please try again.");
-    console.error(err);
-  }
-}
-
-// --- Recent Jobs Listener (FIX: Ensures all recent jobs are displayed initially) ---
-function listenForJobs(q = null) {
-  if(currentJobsListener) currentJobsListener(); 
-
-  const defaultQuery = query(collection(db, "jobs"), where("shopId", "==", currentUserId), orderBy("receivedOn", "desc"), limit(20));
-  const activeQuery = q || defaultQuery;
-  
-  if(q) {
-      const imei = q._query.filters.find(f => f.field.segments[0] === 'imeiNumber')?.value;
-      if (imei) {
-          listenForLegalHistory(imei);
-      } else {
-          document.getElementById("legal-history-table-body").innerHTML = `<tr><td colspan="6" class="text-center text-muted">Use the search bar above to check legal declaration history for a specific IMEI.</td></tr>`;
-      }
-  } else {
-      document.getElementById("legal-history-table-body").innerHTML = `<tr><td colspan="6" class="text-center text-muted">Use the search bar above to check legal declaration history for a specific IMEI.</td></tr>`;
-  }
-
-  currentJobsListener = onSnapshot(activeQuery, snapshot => {
-      const tbody = document.getElementById("jobs-table-body");
-      tbody.innerHTML = "";
-      activeJobs = {}; // Clear active jobs cache
-      
-      if (snapshot.empty) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted">No jobs found.</td></tr>`;
-        return;
-      }
-      snapshot.forEach(doc => {
-        const job = doc.data();
-        activeJobs[doc.id] = {...job, jobId: doc.id}; // Cache job data
-        const displayId = doc.id.substring(0, 5).toUpperCase();
-        const statusClass = {
-          Received: "bg-primary",
-          InProgress: "bg-warning text-dark",
-          PartsWaiting: "bg-danger",
-          Ready: "bg-success",
-          Delivered: "bg-secondary",
-          NotRepaired: "bg-dark" 
-        }[job.currentStatus] || "bg-info";
-
-        const row = `<tr>
-          <td>${displayId}</td>
-          <td>${job.deviceType.charAt(0).toUpperCase() + job.deviceType.slice(1)}</td>
-          <td>${job.customerName}</td>
-          <td>${job.customerMobile}</td>
-          <td>${job.deviceName}</td>
-          <td>₹${(job.estimatePrice || 0).toLocaleString('en-IN')}</td>
-          <td><span class="badge ${statusClass}">${job.currentStatus}</span></td>
-          <td class="btn-actions">
-            <button class="btn btn-sm btn-outline-primary" onclick="window.openEditModal('${doc.id}')">Update/Bill</button>
-            <button class="btn btn-sm btn-outline-success" onclick="window.openPrintOptionsModal('${doc.id}', '${job.customerMobile}')">Print Bill</button>
-            ${job.currentStatus !== 'Delivered' && job.currentStatus !== 'NotRepaired' ? 
-              `<button class="btn btn-sm btn-warning text-dark" onclick="window.startWorkAndNotify('${doc.id}', '${job.customerMobile}', '${job.deviceName}')">Start Work</button>` : ''}
-          </td>
-        </tr>`;
-        tbody.insertAdjacentHTML("beforeend", row);
-      });
-    },
-    err => {
-      console.error(err);
-      const tbody = document.getElementById("jobs-table-body");
-      tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger">Error loading jobs.</td></tr>`;
-    }
-  );
-}
-
-// --- IMEI Search Logic (FIX: Improved error handling and check) ---
-function setupSearchLogic() {
-    document.getElementById("imeiSearchBtn").addEventListener("click", performImeiSearch);
-    document.getElementById("imeiSearchInput").addEventListener("keypress", (e) => {
-        if (e.key === 'Enter') performImeiSearch();
-    });
-}
-
-function performImeiSearch() {
-    const imeiInput = document.getElementById("imeiSearchInput");
-    const imei = imeiInput.value.trim().toUpperCase();
-
-    if (imei.length === 0) {
-        listenForJobs(null); 
-        return;
-    }
-    
-    if (imei.length !== 15) {
-        alert("Please enter a valid 15-digit IMEI number.");
-        return;
-    }
-
-    const searchQuery = query(
-        collection(db, "jobs"),
-        where("shopId", "==", currentUserId),
-        where("imeiNumber", "==", imei),
-        limit(5) 
-    );
-    
-    listenForJobs(searchQuery); 
-    
-    document.getElementById("jobs-table-body").innerHTML = `<tr><td colspan="8" class="text-center text-info">Searching for IMEI: ${imei}...</td></tr>`;
-}
-
-// --- WhatsApp Notification (FIX: Ensured correct variables and English message) ---
-window.startWorkAndNotify = async function(jobId, mobileNo, deviceName) {
-    if (!jobId || !mobileNo) return;
-
-    try {
-        await updateDoc(doc(db, "jobs", jobId), {
-            currentStatus: "InProgress"
-        });
-        
-        // WhatsApp Message in English
-        const displayId = jobId.substring(0, 5).toUpperCase();
-        const liveLink = `${shopData.liveStreamDomain || 'https://your-domain.com'}/status.html?id=${jobId}`; 
-        
-        const message = encodeURIComponent(
-            `*Hello ${activeJobs[jobId].customerName}*,\n\n` + 
-            `Your repair work for *${deviceName}* (Job ID: ${displayId}) has just started at *${shopData.shopName || 'Our Shop'}*.\n\n` +
-            `You can check the live status here: ${liveLink}\n\n` +
-            `We will notify you once the repair is complete.\n*Thank you for choosing us!*`
-        );
-        
-        window.open(`https://wa.me/${mobileNo}?text=${message}`, '_blank');
-
-    } catch (error) {
-        console.error("Error updating status or sending WhatsApp:", error);
-        alert("Failed to update status or open WhatsApp.");
-    }
-}
-
-
-// --- Edit Modal Logic (FIX: Complete restoration of all fields and logic) ---
-window.openEditModal = async function(jobId) {
-    const job = activeJobs[jobId];
-    if (!job) {
-        alert("Job data not found locally. Please refresh.");
-        return;
-    }
-
-    // Populate the modal fields
-    document.getElementById("editJobId").value = jobId;
-    document.getElementById("editDeviceType").value = job.deviceType;
-    document.getElementById("editDeviceName").value = job.deviceName;
-    document.getElementById("editIssueDescription").value = job.issueDescription;
-    document.getElementById("editEstimatePrice").value = job.estimatePrice || 0;
-    document.getElementById("editServiceCharge").value = job.serviceCharge || 0;
-    document.getElementById("editPaidAmount").value = job.paidAmount || 0; 
-    document.getElementById("editCurrentStatus").value = job.currentStatus;
-    
-    // Populate parts container
-    updatePartsDisplay(job.parts || []);
-    
-    const modalEl = document.getElementById('editJobModal');
-    const modal = new bootstrap.Modal(modalEl);
-    modal.show();
-}
-
-// --- Parts Management Logic (FIX: Complete restoration of parts logic) ---
-let currentParts = [];
-const partsModalEl = document.getElementById('partsModal');
-partsModalEl.addEventListener('show.bs.modal', function () {
-    const jobId = document.getElementById("editJobId").value;
-    currentParts = activeJobs[jobId]?.parts || [];
-    renderPartsList();
-});
-
-document.getElementById('addPartForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const name = document.getElementById('partName').value.trim();
-    const cost = parseFloat(document.getElementById('partCost').value);
-
-    if (name && cost > 0) {
-        currentParts.push({ name: name, cost: cost });
-        renderPartsList();
-        document.getElementById('partName').value = '';
-        document.getElementById('partCost').value = '';
-    }
-});
-
-function renderPartsList() {
-    const list = document.getElementById('partsList');
-    const totalCostSpan = document.getElementById('totalPartsCost');
-    const partsContainer = document.getElementById('partsContainer');
-    list.innerHTML = '';
-    
-    if (currentParts.length === 0) {
-        list.innerHTML = `<li class="list-group-item d-flex justify-content-between align-items-center text-muted">No parts added yet.</li>`;
-        totalCostSpan.textContent = '0';
-        partsContainer.innerHTML = 'No parts used yet.';
-        return;
-    }
-
-    let totalCost = 0;
-    currentParts.forEach((part, index) => {
-        totalCost += part.cost;
-        const li = document.createElement('li');
-        li.className = 'list-group-item d-flex justify-content-between align-items-center';
-        li.innerHTML = `${part.name} <span class="badge bg-info">₹${part.cost.toLocaleString('en-IN')}</span> <button class="btn btn-sm btn-outline-danger ms-auto" onclick="window.removePart(${index})">X</button>`;
-        list.appendChild(li);
-    });
-    
-    totalCostSpan.textContent = totalCost.toLocaleString('en-IN');
-    updatePartsDisplay(currentParts);
-}
-
-window.removePart = function(index) {
-    currentParts.splice(index, 1);
-    renderPartsList();
-}
-
-function updatePartsDisplay(parts) {
-    const container = document.getElementById('partsContainer');
-    if (parts.length === 0) {
-        container.innerHTML = '<span class="text-muted small">No parts used yet.</span>';
-        return;
-    }
-    const listHtml = parts.map(p => 
-        `<span class="badge bg-secondary me-2">${p.name} (₹${p.cost.toLocaleString('en-IN')})</span>`
-    ).join('');
-    container.innerHTML = listHtml;
-}
-
-// --- Edit Job Form Submission (FIX: Complete logic restored) ---
-document.getElementById("editJobForm").addEventListener("submit", async e => {
-    e.preventDefault();
-    const jobId = document.getElementById("editJobId").value;
-    const currentStatus = document.getElementById("editCurrentStatus").value;
-    const serviceCharge = parseFloat(document.getElementById("editServiceCharge").value) || 0;
-    const paidAmount = parseFloat(document.getElementById("editPaidAmount").value) || 0;
-    const deviceName = document.getElementById("editDeviceName").value.trim();
-    const issueDescription = document.getElementById("editIssueDescription").value.trim();
-    
-    // Calculate total parts cost
-    const totalPartsCost = currentParts.reduce((sum, part) => sum + part.cost, 0);
-
-    const updateData = {
-        deviceName: deviceName,
-        issueDescription: issueDescription,
-        serviceCharge: serviceCharge,
-        parts: currentParts,
-        totalPartsCost: totalPartsCost,
-        currentStatus: currentStatus,
-        paidAmount: paidAmount,
-        lastUpdated: serverTimestamp(),
-    };
-    
-    // Check if job is being delivered
-    if (currentStatus === 'Delivered' || currentStatus === 'NotRepaired') {
-        if (!activeJobs[jobId].deliveryDate) {
-            updateData.deliveryDate = serverTimestamp();
-        }
-    }
-
-    try {
-        await updateDoc(doc(db, "jobs", jobId), updateData);
-        alert(`Job ID ${jobId.substring(0, 5).toUpperCase()} updated successfully!`);
-        
-        // If status is 'Ready' or 'Delivered', prompt for print
-        if (currentStatus === 'Ready' || currentStatus === 'Delivered') {
-            const updatedJob = {...activeJobs[jobId], ...updateData};
-            jobPrintConfirm(updatedJob, jobId);
-        }
-        
-        const modalEl = document.getElementById('editJobModal');
-        bootstrap.Modal.getInstance(modalEl).hide();
-
-    } catch (error) {
-        console.error("Error updating job:", error);
-        alert("Failed to update job. Please check console for details.");
-    }
-});
-
-// --- Print Confirmation after creation/update ---
-function jobPrintConfirm(job, jobId) {
-    const totalCost = (job.serviceCharge || 0) + (job.totalPartsCost || 0);
-    const pendingAmount = totalCost - (job.paidAmount || 0);
-
-    if (totalCost > 0) {
-        const confirmMsg = `Job ${jobId.substring(0, 5).toUpperCase()} created/updated. Total Cost: ₹${totalCost.toLocaleString('en-IN')}. Paid: ₹${(job.paidAmount || 0).toLocaleString('en-IN')}. Pending: ₹${pendingAmount.toLocaleString('en-IN')}. Do you want to print the bill now?`;
-        if (confirm(confirmMsg)) {
-            window.openPrintOptionsModal(jobId, job.customerMobile);
-        }
-    }
-}
-
-
-// --- Print Bill Options Modal (FIX: Restoration) ---
-window.openPrintOptionsModal = async function (jobId, mobileNo) {
-    const job = activeJobs[jobId];
-    if (!job) return alert("Job data not found.");
-
-    const modalEl = document.getElementById("printOptionsModal");
-    const modal = new bootstrap.Modal(modalEl);
-    
-    document.getElementById("printJobIdDisplay").textContent = jobId.substring(0, 5).toUpperCase();
-    document.getElementById("whatsappMobileNo").value = mobileNo;
-
-    // Generate PDF (Data URI)
-    const pdf = await generateProfessionalBillPdf(job, jobId, true); // true for returnOnly
-    const pdfDataURI = pdf.output('datauristring');
-    document.getElementById("pdfDataURI").value = pdfDataURI;
-
-    modal.show();
-};
-
-document.getElementById("savePdfBtn").addEventListener("click", () => {
-    const pdfDataURI = document.getElementById("pdfDataURI").value;
-    const jobId = document.getElementById("printJobIdDisplay").textContent;
-    if (!pdfDataURI) return alert("PDF not ready.");
-    
-    // Logic to convert data URI to Blob and save (using FileSaver.js)
-    const byteCharacters = atob(pdfDataURI.split(',')[1]);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], {type: 'application/pdf'});
-    saveAs(blob, `Bill_${jobId}_${(new Date()).toISOString().substring(0,10)}.pdf`);
-    alert("Bill PDF downloaded successfully.");
-});
-
-document.getElementById("printBillBtn").addEventListener("click", () => {
-    const pdfDataURI = document.getElementById("pdfDataURI").value;
-    if (!pdfDataURI) return alert("PDF not ready.");
-    
-    const win = window.open(pdfDataURI, '_blank');
-    if(win) {
-        win.onload = function() {
-            win.print(); 
-        };
-    } else {
-        alert("Please allow popups to open the PDF for printing.");
-    }
-});
-
-document.getElementById("whatsappShareBtn").addEventListener("click", () => {
-    const mobileNo = document.getElementById("whatsappMobileNo").value;
-    const jobId = document.getElementById("printJobIdDisplay").textContent;
-    const pdfDataURI = document.getElementById("pdfDataURI").value;
-
-    if (!mobileNo || !pdfDataURI) return alert("Mobile number or PDF data missing.");
-    
-    // NOTE: WhatsApp Web/API does not allow direct PDF sharing via URL text
-    // We send a link to an external service or a text message confirming the cost.
-    
-    const job = activeJobs[Object.keys(activeJobs).find(id => id.substring(0, 5).toUpperCase() === jobId)];
-    const totalCost = (job.serviceCharge || 0) + (job.totalPartsCost || 0);
-    const pendingAmount = totalCost - (job.paidAmount || 0);
-
-    const message = encodeURIComponent(
-        `*Hello ${job.customerName}*,\n\n` + 
-        `Your repair for *${job.deviceName}* (Job ID: ${jobId}) has been finalized.\n\n` +
-        `*Total Final Cost:* ₹${totalCost.toLocaleString('en-IN')}\n` +
-        `*Amount Paid:* ₹${(job.paidAmount || 0).toLocaleString('en-IN')}\n` +
-        `*Amount Due:* ₹${pendingAmount.toLocaleString('en-IN')}\n\n` +
-        `Please visit our shop to pick up your device.\n*Thank you!*`
-    );
-    
-    window.open(`https://wa.me/${mobileNo}?text=${message}`, '_blank');
-});
-
-
-// --- Professional Bill PDF Generator (FIX: Restored logic) ---
-async function generateProfessionalBillPdf(job, jobId, returnOnly = false) {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF();
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    let y = 15;
-
-    // Header and Logo
-    pdf.setFontSize(16);
-    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
-    pdf.text(shopData.shopName || "Repair Service", pageWidth / 2, y, { align: 'center' }); y += 7;
-    
-    pdf.setFontSize(10);
-    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
-    pdf.text(shopData.address || "Shop Address Here", pageWidth / 2, y, { align: 'center' }); y += 5;
-    pdf.text(`Contact: ${shopData.mobileNo || 'N/A'}`, pageWidth / 2, y, { align: 'center' }); y += 5;
-
-    pdf.line(10, y, pageWidth - 10, y); y += 5;
-
-    // Job and Customer Info
-    pdf.setFontSize(10);
-    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
-    pdf.text("JOB CARD & BILL", 10, y);
-    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
-    pdf.text(`Job ID: ${jobId.substring(0, 5).toUpperCase()}`, pageWidth - 10, y, { align: 'right' }); y += 5;
-    
-    pdf.text(`Customer: ${job.customerName}`, 10, y);
-    pdf.text(`Date Received: ${job.receivedOn?.toDate ? job.receivedOn.toDate().toLocaleDateString('en-IN') : 'N/A'}`, pageWidth - 10, y, { align: 'right' }); y += 5;
-    
-    pdf.text(`Mobile No: ${job.customerMobile}`, 10, y);
-    pdf.text(`Date Delivered: ${job.deliveryDate?.toDate ? job.deliveryDate.toDate().toLocaleDateString('en-IN') : 'N/A'}`, pageWidth - 10, y, { align: 'right' }); y += 5;
-
-    pdf.line(10, y, pageWidth - 10, y); y += 5;
-
-    // Device and Issue Details
-    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
-    pdf.text("DEVICE DETAILS", 10, y); y += 5;
-    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
-    pdf.text(`Device: ${job.deviceName} (${job.deviceType.toUpperCase()})`, 10, y); y += 5;
-    if (job.imeiNumber) {
-        pdf.text(`IMEI: ${job.imeiNumber}`, 10, y); y += 5;
-    }
-    pdf.text(`Issue: ${job.issueDescription}`, 10, y); y += 7;
-
-    pdf.line(10, y, pageWidth - 10, y); y += 5;
-
-    // Pricing Table
-    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
-    pdf.text("SERVICE & COST BREAKDOWN", 10, y); y += 5;
-
-    const tableData = [
-        ["Service Charge", `₹${(job.serviceCharge || 0).toLocaleString('en-IN')}`]
-    ];
-    
-    const partsData = (job.parts || []).map(p => [
-        `Part: ${p.name}`, `₹${p.cost.toLocaleString('en-IN')}`
-    ]);
-    
-    tableData.push(...partsData);
-
-    let partsTotal = (job.parts || []).reduce((sum, p) => sum + p.cost, 0);
-
-    // Summary Totals
-    tableData.push(
-        ['', ''],
-        [{ content: "SUBTOTAL (Parts + Service)", styles: { fontStyle: 'bold' } }, { content: `₹${((job.serviceCharge || 0) + partsTotal).toLocaleString('en-IN')}`, styles: { fontStyle: 'bold' } }]
-    );
-    
-    const totalFinal = (job.serviceCharge || 0) + partsTotal;
-    const pendingAmount = totalFinal - (job.paidAmount || 0);
-    
-    tableData.push(
-        [{ content: "AMOUNT PAID", styles: { fontStyle: 'bold', fillColor: '#f0f0f0' } }, { content: `₹${(job.paidAmount || 0).toLocaleString('en-IN')}`, styles: { fontStyle: 'bold', fillColor: '#f0f0f0' } }],
-        [{ content: "BALANCE DUE", styles: { fontStyle: 'bold', fillColor: '#ffdddd', textColor: '#cc0000' } }, { content: `₹${pendingAmount.toLocaleString('en-IN')}`, styles: { fontStyle: 'bold', fillColor: '#ffdddd', textColor: '#cc0000' } }]
-    );
-
-    pdf.autoTable({
-        startY: y,
-        head: [['Description', 'Amount']],
-        body: tableData,
-        theme: 'striped',
-        styles: { fontSize: 10, cellPadding: 2 },
-        headStyles: { fillColor: [44, 62, 80], textColor: 255, fontStyle: 'bold' },
-        columnStyles: {
-            0: { cellWidth: 150 },
-            1: { cellWidth: 'auto', halign: 'right' }
-        },
-        didDrawPage: (data) => { y = data.cursor.y + 5; }
-    });
-    
-    // Terms and Signature
-    pdf.setFontSize(8);
-    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
-    
-    const disclaimer = `Terms: This receipt is proof of service only. Warranty covers only the parts/service explicitly mentioned for ${job.deviceName}. We are not responsible for any data loss. Unclaimed devices after 30 days will be disposed of.`;
-    pdf.text(disclaimer, 10, y, { maxWidth: pageWidth - 20 });
-    y += 10;
-    
-    pdf.line(10, y, 70, y);
-    pdf.text("Customer Signature", 15, y + 5);
-    
-    pdf.line(pageWidth - 70, y, pageWidth - 10, y);
-    pdf.text("Shop Stamp/Signature", pageWidth - 65, y + 5);
-    
-    if (returnOnly) {
-        return pdf;
-    } else {
-        pdf.save(`Bill_${jobId.substring(0, 5).toUpperCase()}.pdf`);
-    }
-}
-
-
-// --- Legal PDF Generator (FIX: Complete restoration) ---
-// Note: Code for generateLegalPdf, openLegalPrintOptionsModal, legalSavePdfBtn, legalPrintBtn, redirectToCeir
-// and listenForLegalHistory is exactly as provided in V5 and is assumed to be working correctly with the fixes.
-
-async function saveLegalDeclaration() {
-    if (!currentUserId) return;
-    const form = document.getElementById("legalDeclarationForm");
-
-    const unlockTypes = [];
-    if (form.ulPin.checked) unlockTypes.push("Pattern/PIN Unlock");
-    if (form.ulFrp.checked) unlockTypes.push("FRP (Google Account) Unlock");
-    if (form.ulNetwork.checked) unlockTypes.push("Network Unlock");
-    if (form.ulOthers.checked) unlockTypes.push("Others");
-
-    if (unlockTypes.length === 0) {
-        return alert("Please select at least one unlocking type.");
-    }
-    
-    const declarationData = {
-        shopId: currentUserId,
-        brandModel: form.ulBrandModel.value.trim(),
-        imei: form.ulImei.value.trim().toUpperCase(),
-        unlockTypes: unlockTypes,
-        customerName: form.ulFullName.value.trim(),
-        phoneNumber: form.ulPhoneNumber.value.trim(),
-        idTypeNumber: form.ulIdTypeNumber.value.trim(),
-        address: form.ulAddress.value.trim(),
-        date: form.ulDate.value,
-        createdOn: serverTimestamp()
-    };
-
-    try {
-        await addDoc(collection(db, "legalDeclarations"), declarationData);
-        alert("Legal Declaration Record Saved Successfully!");
-        
-        // After saving, generate and open PDF
-        openLegalPrintOptionsModal(declarationData);
-        form.reset();
-
-    } catch (err) {
-        alert("Failed to save legal declaration record.");
-        console.error(err);
-    }
-}
-
-window.openLegalPrintOptionsModal = async function (declarationData) {
-    const modalEl = document.getElementById("legalPrintOptionsModal");
-    const modal = new bootstrap.Modal(modalEl);
-    
-    // Generate PDF (Data URI)
-    const pdf = await generateLegalPdf(declarationData, true); 
-    const pdfDataURI = pdf.output('datauristring');
-    
-    document.getElementById("legalImeiDisplay").textContent = declarationData.imei;
-    document.getElementById("legalPdfDataURI").value = pdfDataURI;
-    document.getElementById("legalPdfData").value = JSON.stringify(declarationData); 
-
-    modal.show();
-};
-
-document.getElementById("legalSavePdfBtn").addEventListener("click", () => {
-    const pdfDataURI = document.getElementById("legalPdfDataURI").value;
-    const imei = document.getElementById("legalImeiDisplay").textContent;
-    if (!pdfDataURI) return alert("PDF not ready.");
-    
-    const byteCharacters = atob(pdfDataURI.split(',')[1]);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-        byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], {type: 'application/pdf'});
-    saveAs(blob, `LegalDeclaration_${imei}_${(new Date()).toISOString().substring(0,10)}.pdf`);
-    alert("Legal Declaration PDF downloaded successfully.");
-});
-
-document.getElementById("legalPrintBtn").addEventListener("click", async () => {
-    const dataString = document.getElementById("legalPdfData").value;
-    const declarationData = JSON.parse(dataString);
-
-    const pdf = await generateLegalPdf(declarationData, true); 
-    const pdfDataURI = pdf.output('datauristring');
-
-    if (!pdfDataURI) return alert("PDF not ready.");
-    
-    const win = window.open(pdfDataURI, '_blank');
-    if(win) {
-        win.onload = function() {
-            win.print(); 
-        };
-    } else {
-        alert("Please allow popups to open the PDF for printing.");
-    }
-});
-
-async function generateLegalPdf(data, returnOnly = false) {
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({format:"a4"});
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    
-    // Format Date
-    let date;
-    if (data.createdOn?.toDate) {
-        const d = data.createdOn.toDate();
-        date = `${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()}`;
-    } else {
-        const dateInput = data.date.split('-');
-        date = `${dateInput[2]}/${dateInput[1]}/${dateInput[0].substring(0,2)}${dateInput[0].substring(2)}`;
-    }
-
-    pdf.setFontSize(11);
-    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
-    
-    pdf.setFontSize(14);
-    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
-    pdf.text("DECLARATION FOR MOBILE UNLOCKING SERVICE", pageWidth / 2, 15, {align: 'center'});
-
-    pdf.setFontSize(10);
-    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
-    pdf.text(`Shop Name: ${shopData.shopName || 'N/A'}`, 15, 25);
-    pdf.text(`Shop Address: ${shopData.address || 'N/A'}`, 15, 30);
-    pdf.text(`Contact: ${shopData.mobileNo || 'N/A'}`, 15, 35);
-    pdf.line(15, 38, pageWidth - 15, 38);
-
-    const declarationPart1 = `I, the undersigned, hereby declare that I am the lawful owner/user of the mobile phone submitted for unlocking at the above-mentioned shop.`;
-    pdf.text(declarationPart1, 15, 45);
-
-    pdf.setFontSize(10);
-    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
-    pdf.text("DEVICE DETAILS:", 15, 55);
-    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
-
-    let y = 62;
-    pdf.text(`Brand & Model: ${data.brandModel}`, 25, y); 
-    pdf.text(`IMEI Number: ${data.imei}`, 110, y); y += 7;
-    
-    pdf.text("Type of Unlocking Required:", 25, y); y += 5;
-    data.unlockTypes.forEach(type => {
-        pdf.text(`[✓] ${type}`, 30, y); y += 5;
-    });
-    
-    y += 5;
-    pdf.setFontSize(10);
-    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
-    pdf.text("CUSTOMER DECLARATION:", 15, y); y += 5;
-    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
-
-    const legalTerms = [
-        "1. I confirm that the device is my legal property and is NOT STOLEN or involved in any criminal activity.",
-        "2. I accept all terms and conditions of the shop regarding the unlocking process.",
-        "3. I understand that the shop and technician are NOT responsible for any data loss, damage, or legal consequences arising from this unlocking service.",
-        "4. I have submitted a valid ID proof for verification."
-    ];
-    legalTerms.forEach(term => {
-        pdf.text(term, 20, y); y += 5;
-    });
-
-    y += 10;
-    pdf.setFontSize(10);
-    pdf.setFont(pdf.getFontList().Helvetica, 'bold');
-    pdf.text("CUSTOMER DETAILS:", 15, y); y += 5;
-    pdf.setFont(pdf.getFontList().Helvetica, 'normal');
-    
-    pdf.text(`Full Name: ${data.customerName}`, 25, y); y += 7;
-    pdf.text(`Address: ${data.address}`, 25, y); y += 7;
-    pdf.text(`Phone Number: ${data.phoneNumber}`, 25, y); y += 7;
-    pdf.text(`ID Type & Number: ${data.idTypeNumber}`, 25, y); y += 15;
-    
-    pdf.text(`Date: ${date}`, 15, y);
-    pdf.text("Customer Signature:", 130, y); y += 5;
-    
-    pdf.line(130, y, 190, y); 
-    
-    pdf.setFontSize(8);
-    pdf.setFont(pdf.getFontList().Helvetica, 'italic');
-    pdf.text("This document is powered by RepariFy Web. Any misuse of this declaration is punishable by law.", pageWidth/2, 280, {align: "center"});
-
-    if (returnOnly) {
-        return pdf;
-    } else {
-        pdf.save(`UnlockingDeclaration_${data.customerName.replace(/\s/g, '')}.pdf`);
-    }
-}
-
-window.redirectToCeir = function() {
-  const imei = document.getElementById('ceirImeiNumber').value.trim();
-  if (/^\d{15}$/.test(imei)) {
-    window.open(`https://ceir.sancharsaathi.gov.in/Device/CeirImeiVerification.jsp?imei=${imei}`, '_blank');
-  } else {
-    alert('Please enter a valid 15-digit IMEI number.');
-  }
-}
-
-function listenForLegalHistory(imei) {
-    const q = query(
-        collection(db, "legalDeclarations"),
-        where("shopId", "==", currentUserId),
-        where("imei", "==", imei),
-        orderBy("createdOn", "desc")
-    );
-    
-    const tbody = document.getElementById("legal-history-table-body");
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-info">Searching for legal history of IMEI: ${imei}...</td></tr>`;
-    
-    getDocs(q).then(snapshot => {
-        tbody.innerHTML = "";
-        if (snapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted">No legal declaration history found for this IMEI.</td></tr>`;
-            return;
-        }
-
-        snapshot.forEach(docSnap => {
-            const data = docSnap.data();
-            const dateDisplay = data.createdOn?.toDate ? data.createdOn.toDate().toLocaleDateString('en-IN') : data.date;
-            
-            // To pass data to the function without error, use JSON.stringify and replace quotes
-            const dataString = JSON.stringify(data).replace(/"/g, '&quot;'); 
-
-            const row = `<tr>
-                <td>${data.imei}</td>
-                <td>${data.customerName}</td>
-                <td>${data.idTypeNumber}</td>
-                <td>${data.unlockTypes.join(', ')}</td>
-                <td>${dateDisplay}</td>
-                <td><button class="btn btn-sm btn-danger" onclick="window.openLegalPrintOptionsModal(${dataString})">Print Legal PDF</button></td>
-            </tr>`;
-            tbody.insertAdjacentHTML("beforeend", row);
-        });
-    }).catch(err => {
-        console.error("Error loading legal history:", err);
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-danger">Error loading legal history.</td></tr>`;
-    });
-}
-
-// --- Daily Report Logic (FIX: Restoration) ---
-function setupReportDate() {
-    // Set default date to today
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('reportDate').value = today;
-    document.getElementById('generateReportBtn').addEventListener('click', generateDailyReport);
-}
-
-async function generateDailyReport() {
-    const dateInput = document.getElementById('reportDate').value;
-    if (!dateInput) return alert("Please select a date for the report.");
-
-    document.getElementById("report-table-body").innerHTML = `<tr><td colspan="5" class="text-center text-info">Generating report for ${dateInput}...</td></tr>`;
-    document.getElementById("reportSummary").style.display = 'none';
-
-    try {
-        const startOfDay = new Date(dateInput);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(dateInput);
-        endOfDay.setHours(23, 59, 59, 999);
-        
-        // Firestore queries are exclusive on 'end' date, so we use less than endOfDay
-        const reportQuery = query(
-            collection(db, "jobs"),
-            where("shopId", "==", currentUserId),
-            where("currentStatus", "in", ["Delivered", "NotRepaired"]), // Filter only delivered/unrepaired jobs
-            where("deliveryDate", ">=", startOfDay),
-            where("deliveryDate", "<=", endOfDay),
-            orderBy("deliveryDate", "desc")
-        );
-
-        const snapshot = await getDocs(reportQuery);
-        const tbody = document.getElementById("report-table-body");
-        tbody.innerHTML = "";
-        
-        let totalIncome = 0;
-        let totalDelivered = 0;
-        let mobileDelivered = 0;
-        let computerDelivered = 0;
-
-        if (snapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted">No jobs delivered/closed on this date.</td></tr>`;
-        } else {
-            snapshot.forEach(docSnap => {
-                const job = docSnap.data();
-                const jobId = docSnap.id;
-                
-                if (job.currentStatus === "Delivered") {
-                    const finalCost = (job.serviceCharge || 0) + (job.totalPartsCost || 0);
-                    totalIncome += finalCost;
-                    totalDelivered++;
-                    if (job.deviceType === "mobile") mobileDelivered++;
-                    else if (job.deviceType === "computer") computerDelivered++;
-                } else if (job.currentStatus === "NotRepaired") {
-                    totalDelivered++;
-                    if (job.deviceType === "mobile") mobileDelivered++;
-                    else if (job.deviceType === "computer") computerDelivered++;
-                }
-                
-                const finalCostDisplay = job.currentStatus === "Delivered" 
-                    ? `₹${((job.serviceCharge || 0) + (job.totalPartsCost || 0)).toLocaleString('en-IN')}`
-                    : 'N/A';
-                    
-                const row = `<tr>
-                    <td>${jobId.substring(0, 5).toUpperCase()}</td>
-                    <td>${job.deviceType.charAt(0).toUpperCase() + job.deviceType.slice(1)}</td>
-                    <td>${job.customerName}</td>
-                    <td>${finalCostDisplay}</td>
-                    <td><span class="badge bg-secondary">${job.currentStatus}</span></td>
-                </tr>`;
-                tbody.insertAdjacentHTML("beforeend", row);
-            });
-        }
-
-        // Update Summary
-        document.getElementById("summaryDate").textContent = dateInput;
-        document.getElementById("totalDelivered").textContent = totalDelivered;
-        document.getElementById("totalIncome").textContent = `₹${totalIncome.toLocaleString('en-IN')}`;
-        document.getElementById("mobileDelivered").textContent = mobileDelivered;
-        document.getElementById("computerDelivered").textContent = computerDelivered;
-        document.getElementById("reportSummary").style.display = 'flex';
-
-    } catch (error) {
-        console.error("Error generating report:", error);
-        document.getElementById("report-table-body").innerHTML = `<tr><td colspan="5" class="text-center text-danger">An error occurred while fetching the report.</td></tr>`;
-    }
-}
-
-// --- Online Unlocking Order Logic (FIX: Restoration) ---
-let selectedService = null;
-function listenForUnlockRates() {
-    const q = query(collection(db, "unlockRates"), orderBy("price", "asc"), limit(50));
-    onSnapshot(q, (snapshot) => {
-        const listDiv = document.getElementById('unlocking-services-list');
-        listDiv.innerHTML = '';
-        if (snapshot.empty) {
-            listDiv.innerHTML = '<p class="text-danger">No unlocking services available.</p>';
-            return;
-        }
-
-        snapshot.forEach(docSnap => {
-            const service = docSnap.data();
-            const card = document.createElement('div');
-            card.className = 'col-6 col-sm-12 col-md-6';
-            card.innerHTML = `
-                <div class="card service-card border-secondary" data-id="${docSnap.id}" data-price="${service.price}" data-name="${service.name}">
-                    <div class="card-body p-3">
-                        <h6 class="card-title">${service.name}</h6>
-                        <p class="card-text mb-0">Price: <span class="fw-bold text-danger">₹${service.price.toLocaleString('en-IN')}</span></p>
-                    </div>
-                </div>
-            `;
-            listDiv.appendChild(card);
-        });
-        
-        document.querySelectorAll('.service-card').forEach(card => {
-            card.addEventListener('click', selectService);
-        });
-    }, (err) => {
-        console.error("Error loading unlock rates:", err);
-        document.getElementById('unlocking-services-list').innerHTML = '<p class="text-danger">Failed to load services.</p>';
-    });
-}
-
-function selectService(event) {
-    const card = event.currentTarget;
-    document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
-    card.classList.add('selected');
-    
-    selectedService = {
-        id: card.getAttribute('data-id'),
-        name: card.getAttribute('data-name'),
-        price: parseFloat(card.getAttribute('data-price'))
-    };
-
-    document.getElementById('serviceId').value = selectedService.id;
-    document.getElementById('servicePrice').value = selectedService.price;
-    document.getElementById('selectedServiceName').textContent = selectedService.name;
-    document.getElementById('displayServicePrice').textContent = selectedService.price.toLocaleString('en-IN');
-    document.getElementById('orderUnlockBtn').disabled = false;
-    document.getElementById('orderErrorMsg').textContent = '';
-}
-
-document.getElementById('unlockingOrderForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!selectedService) {
-        document.getElementById('orderErrorMsg').textContent = 'Please select a service.';
-        return;
-    }
-
-    const form = e.target;
-    const newOrder = {
-        serviceId: selectedService.id,
-        serviceName: selectedService.name,
-        customerName: form.uCustomerName.value.trim(),
-        customerMobile: form.uCustomerMobile.value.trim(),
-        brandModel: form.uBrandModel.value.trim(),
-        imei: form.uImei.value.trim().toUpperCase(),
-        customerPrice: selectedService.price,
-        shopId: currentUserId,
-        shopName: shopData.shopName,
-        status: "Pending (New Order)",
-        orderedOn: serverTimestamp()
-    };
-
-    try {
-        await addDoc(collection(db, "unlockOrders"), newOrder);
-        alert(`Unlocking order for ${newOrder.serviceName} placed successfully!`);
-        form.reset();
-        document.getElementById('orderUnlockBtn').disabled = true;
-        selectedService = null;
-        document.getElementById('selectedServiceName').textContent = 'None Selected';
-        document.getElementById('displayServicePrice').textContent = '0';
-        document.getElementById('orderErrorMsg').textContent = '';
-    } catch (err) {
-        console.error("Error placing order:", err);
-        document.getElementById('orderErrorMsg').textContent = 'Failed to place order. Try again.';
-    }
-});
-
-function listenForUnlockOrders() {
-    const q = query(collection(db, "unlockOrders"), where("shopId", "==", currentUserId), orderBy("orderedOn", "desc"), limit(10));
-    onSnapshot(q, (snapshot) => {
-        const tbody = document.getElementById("unlock-orders-table-body");
-        tbody.innerHTML = "";
-        if (snapshot.empty) {
-            tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">No recent unlocking orders found.</td></tr>`;
-            return;
-        }
-
-        snapshot.forEach(docSnap => {
-            const order = docSnap.data();
-            const orderId = docSnap.id.substring(0, 5).toUpperCase();
-            const date = order.orderedOn?.toDate ? order.orderedOn.toDate().toLocaleDateString('en-IN') : 'N/A';
-            const statusClass = order.status.includes('Completed') ? 'bg-success' : order.status.includes('Pending') ? 'bg-warning text-dark' : 'bg-danger';
-
-            const row = `<tr>
-                <td>${orderId}</td>
-                <td>${order.serviceName}</td>
-                <td>${order.brandModel}</td>
-                <td>₹${order.customerPrice.toLocaleString('en-IN')}</td>
-                <td>${order.techName || 'Admin'}</td>
-                <td><span class="badge ${statusClass}">${order.status}</span></td>
-                <td>${date}</td>
-            </tr>`;
-            tbody.insertAdjacentHTML("beforeend", row);
-        });
-    });
-}
-</script>
+<script type="module" src="./dashboard.js"></script>
 </body>
 </html>
