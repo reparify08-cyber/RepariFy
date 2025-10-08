@@ -44,9 +44,34 @@
         max-height: 50px;
         object-fit: contain;
     }
+    /* Hide dashboard until data loads to prevent flicker */
+    #main-dashboard-content {
+        display: none;
+    }
+    #loading-screen {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #fff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 10000;
+    }
   </style>
 </head>
 <body>
+<div id="loading-screen">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <p class="mt-2 text-muted">Checking authentication and loading shop data...</p>
+</div>
+
+<div id="main-dashboard-content">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
   <div class="container-fluid d-flex justify-content-between">
     <a class="navbar-brand" href="#">
@@ -272,6 +297,7 @@
     </table>
   </div>
 </div>
+</div>
 
 <div class="modal fade" id="editJobModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -381,7 +407,11 @@ let shopData = null;
 let activeTechnicians = []; 
 
 // --- Core Auth Logic ---
+// **FIX: Improved Authentication and Data Loading Logic**
 onAuthStateChanged(auth, async user => {
+  const loadingScreen = document.getElementById("loading-screen");
+  const mainContent = document.getElementById("main-dashboard-content");
+
   if (user) {
     currentUserId = user.uid;
     try {
@@ -389,6 +419,8 @@ onAuthStateChanged(auth, async user => {
       if (docSnap.exists() && docSnap.data().isApproved) {
         shopData = docSnap.data();
         document.title = `Dashboard - ${shopData.shopName}`;
+        
+        // Initialize UI components after data is safely loaded
         listenForJobs();
         listenForUnlockRates();
         listenForUnlockOrders();
@@ -396,19 +428,25 @@ onAuthStateChanged(auth, async user => {
         fillShopDetails();
         setupLogoPreview();
         setupReportDate();
+
+        // Show main content and hide loading screen
+        mainContent.style.display = 'block';
+        loadingScreen.style.display = 'none';
+
       } else {
-        alert("Access denied, not approved or revoked.");
+        alert("Access denied, your shop is not approved or access has been revoked.");
         await signOut(auth);
         window.location.href = "login.html";
       }
     } catch (err) {
-      console.error("Shop fetch error", err);
-      // **FIX:** Ensure that if an error occurs, the user is directed to login
+      console.error("Shop data loading error:", err);
+      alert("Failed to load shop data. Please try logging in again.");
       await signOut(auth);
-      window.location.href = "login.html"; 
+      window.location.href = "login.html";
     }
   } else {
-    // **FIX:** Ensure redirection happens if no user is found
+    // Hide loading screen before redirecting
+    loadingScreen.style.display = 'none'; 
     window.location.href = "login.html";
   }
 });
@@ -419,7 +457,7 @@ document.getElementById("logoutBtn").addEventListener("click", () =>
   })
 );
 
-// --- Shop Data & Logo Display ---
+// --- Shop Data & Logo Display (All same as previous version) ---
 function fillShopDetails() {
     if (shopData) {
         document.getElementById("navShopName").textContent = shopData.shopName || "RepariFy Dashboard";
@@ -444,7 +482,7 @@ function setupLogoPreview() {
     }
 }
 
-// --- Logo Upload Logic ---
+// --- Logo Upload Logic (All same as previous version) ---
 document.getElementById("uploadLogoConfirmBtn").addEventListener("click", async () => {
     const fileInput = document.getElementById("logoFile");
     const file = fileInput.files[0];
@@ -459,11 +497,10 @@ document.getElementById("uploadLogoConfirmBtn").addEventListener("click", async 
     try {
         // 1. Delete old logo if it exists
         if (shopData && shopData.logoUrl) {
-            // Extract path from download URL
             const url = shopData.logoUrl;
-            const pathMatch = url.match(/shop_logos%2F[^?]+/);
+            const pathMatch = url.match(/shop_logos%2F([^?]+)/);
             if(pathMatch){
-                const oldPath = decodeURIComponent(pathMatch[0].replace('shop_logos%2F', ''));
+                const oldPath = decodeURIComponent(pathMatch[1]);
                 const oldRef = storageRef(storage, `shop_logos/${oldPath}`);
                 await deleteObject(oldRef).catch(err => console.warn("Failed to delete old logo (might not exist):", err));
             }
@@ -513,7 +550,7 @@ document.getElementById("unlockingOrderForm").addEventListener("submit", e => {
   createUnlockOrder();
 });
 
-// --- Create local job function ---
+// --- Create local job function (Same as previous version) ---
 async function createJob(type) {
   if (!currentUserId || !shopData) {
     alert("User data missing, please refresh.");
@@ -550,7 +587,7 @@ async function createJob(type) {
   }
 }
 
-// --- Live Work Streaming (WhatsApp Link Generator) ---
+// --- Live Work Streaming (WhatsApp Link Generator) (Same as previous version) ---
 window.startWorkAndNotify = async function (jobId) {
     try {
         const docSnap = await getDoc(doc(db, "jobs", jobId));
@@ -570,7 +607,6 @@ window.startWorkAndNotify = async function (jobId) {
         const whatsappMsg = encodeURIComponent(
             `*${shopData.shopName}* থেকে একটি নোটিফিকেশন:\n\nপ্রিয় ${job.customerName},\n\nআপনার *${job.deviceName}* ডিভাইসের কাজ শুরু হয়েছে। আপনি এই লিংকটিতে ক্লিক করে *লাইভ ভিডিও স্ট্রিমিং*-এর মাধ্যমে কাজটি দেখতে পারেন।\n\n🔗 *লাইভ লিংক:* ${liveStreamUrl}\n\nআপনার ডিভাইস ID: ${jobId.substring(0, 5).toUpperCase()}`
         );
-        // Assuming job.customerMobile includes country code (e.g., +91xxxxxxxxxx) or only 10 digits
         const mobileNumber = job.customerMobile.startsWith('+') ? job.customerMobile : `+91${job.customerMobile}`;
         const whatsappLink = `https://wa.me/${mobileNumber.replace('+', '').replace(/\s/g, '')}?text=${whatsappMsg}`;
 
@@ -585,7 +621,7 @@ window.startWorkAndNotify = async function (jobId) {
     }
 }
 
-// --- Recent jobs listener (Local Repair) ---
+// --- Recent jobs listener (Local Repair) (Same as previous version) ---
 function listenForJobs() {
   const q = query(collection(db, "jobs"), where("shopId", "==", currentUserId), limit(20));
   onSnapshot(q, snapshot => {
@@ -634,7 +670,7 @@ function listenForJobs() {
   );
 }
 
-// --- Edit Modal Logic ---
+// --- Edit Modal Logic (Same as previous version) ---
 window.openEditModal = async function (jobId) {
     const modalEl = document.getElementById("editJobModal");
     const modal = new bootstrap.Modal(modalEl);
@@ -807,7 +843,7 @@ async function generateDailyReport(dateString) {
 }
 
 
-// --- Professional Purchase Bill PDF Generator (Updated with Logo) ---
+// --- Professional Purchase Bill PDF Generator (Same as previous version) ---
 window.downloadJobPdf = async function (jobId) {
     const docSnap = await getDoc(doc(db, "jobs", jobId));
     if (docSnap.exists()) {
@@ -984,11 +1020,11 @@ async function generateProfessionalBillPdf(data, id, logoUrl){
   pdf.save(`Bill_${id}_${data.customerName.replace(/\s/g, '')}.pdf`);
 }
 
-// Helper to load image for jspdf
+// Helper to load image for jspdf (Same as previous version)
 function loadImage(url) {
     return new Promise((resolve, reject) => {
         const img = new Image();
-        img.crossOrigin = 'Anonymous'; // Crucial for cross-origin images
+        img.crossOrigin = 'Anonymous'; 
         img.onload = () => resolve(img);
         img.onerror = () => reject(new Error('Image failed to load.'));
         img.src = url;
@@ -1049,7 +1085,6 @@ function numToWords(n) {
 }
 
 // --- Unlocking Order Logic (Same as previous version) ---
-// ... (All other unlocking/technician/legal PDF functions remain the same to keep the code concise)
 function listenForTechnicians() {
     const q = query(collection(db, "technicians"), where("status", "==", "Active"));
     onSnapshot(q, (snapshot) => {
